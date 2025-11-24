@@ -76,8 +76,10 @@ public class StompAuthInterceptor implements ChannelInterceptor {
                 throw new InvalidDestinationException();
             }
 
+            String[] parts = destination.split("/");
+
             Long userId = (Long) auth.getPrincipal();
-            Long roomId = Long.parseLong(destination.substring("/topic/room/".length()));
+            Long roomId = Long.parseLong(parts[3]);
             Room room = roomRepository.findById(roomId).orElseThrow(RoomNotFoundException::new);
             Long sessionId = room.getSession().getId();
 
