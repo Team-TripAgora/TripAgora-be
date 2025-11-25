@@ -26,7 +26,7 @@ jobs:
         run: |
           mkdir -p ./src/main/resources
           echo "${{ secrets.APPLICATION_MAIN_YML }}" > ./src/main/resources/application-main.yml
-          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}" > ./src/main/resources/serviceAccountKey.json
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}' > ./src/main/resources/serviceAccountKey.json
 
         # 4. 테스트 및 빌드 (GitHub Actions 서버에서)
       - name: Make Gradle Wrapper executable
