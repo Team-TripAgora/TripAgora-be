@@ -1,0 +1,40 @@
+package com.example.TripAgora.common.service;
+
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.MulticastMessage;
+import com.google.firebase.messaging.Notification;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class FcmService {
+
+    public void sendMulticastMessage(List<String> tokens, String title, String body) {
+        if (tokens == null || tokens.isEmpty()) {
+            return;
+        }
+
+        Notification notification = Notification.builder()
+                .setTitle(title)
+                .setBody(body)
+                .build();
+
+        MulticastMessage message = MulticastMessage.builder()
+                .setNotification(notification)
+                .addAllTokens(tokens)
+                .putData("type", "SOS") // 프론트에서 구분할 데이터
+                .build();
+
+        try {
+            FirebaseMessaging.getInstance().sendEachForMulticast(message);
+            log.info("{}명에게 알림 전송 성공", tokens.size());
+        } catch (Exception e) {
+            log.error("FCM 전송 실패", e);
+        }
+    }
+}
