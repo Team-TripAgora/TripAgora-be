@@ -39,3 +39,6 @@ out/
 ### yml 파일 ###
 src/main/resources/application-main.yml
 application-main.yml
+
+### Firebase Admin Key ###
+src/main/resources/serviceAccountKey.json
