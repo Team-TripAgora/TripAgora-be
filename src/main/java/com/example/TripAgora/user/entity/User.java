@@ -46,6 +46,9 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String imageUrl;
 
+    @Column
+    private String fcmToken;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserTag> userTags = new ArrayList<>();
 
@@ -79,5 +82,9 @@ public class User extends BaseEntity {
 
     public void updateImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public void updateFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
     }
 }

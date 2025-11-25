@@ -27,6 +27,8 @@ public class QUser extends EntityPathBase<User> {
     //inherited
     public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
 
+    public final StringPath fcmToken = createString("fcmToken");
+
     public final com.example.TripAgora.guideProfile.entity.QGuideProfile guideProfile;
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
