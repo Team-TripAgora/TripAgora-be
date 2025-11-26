@@ -13,8 +13,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class FcmService {
-
-    public void sendMulticastMessage(List<String> tokens, String title, String body) {
+    public void sendMulticastMessage(List<String> tokens, String title, String body, Long sessionId) {
         if (tokens == null || tokens.isEmpty()) {
             return;
         }
@@ -27,7 +26,8 @@ public class FcmService {
         MulticastMessage message = MulticastMessage.builder()
                 .setNotification(notification)
                 .addAllTokens(tokens)
-                .putData("type", "SOS") // 프론트에서 구분할 데이터
+                .putData("type", "SOS")
+                .putData("sessionId", sessionId.toString())
                 .build();
 
         try {

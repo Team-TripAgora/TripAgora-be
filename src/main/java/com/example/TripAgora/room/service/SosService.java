@@ -46,8 +46,9 @@ public class SosService {
         if (!targetTokens.isEmpty()) {
             String title = "🚨 긴급 SOS 요청";
             String body = String.format("'%s'님이 긴급 도움을 요청했습니다!", sender.getNickname());
+            Long sessionId = room.getSession().getId();
 
-            fcmService.sendMulticastMessage(targetTokens, title, body);
+            fcmService.sendMulticastMessage(targetTokens, title, body, sessionId);
         }
     }
 }
