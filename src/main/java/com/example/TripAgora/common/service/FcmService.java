@@ -1,8 +1,6 @@
 package com.example.TripAgora.common.service;
 
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.MulticastMessage;
-import com.google.firebase.messaging.Notification;
+import com.google.firebase.messaging.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,6 +19,12 @@ public class FcmService {
         Notification notification = Notification.builder()
                 .setTitle(title)
                 .setBody(body)
+                .build();
+
+        AndroidConfig androidConfig = AndroidConfig.builder()
+                .setNotification(AndroidNotification.builder()
+                        .setChannelId("default")
+                        .build())
                 .build();
 
         MulticastMessage message = MulticastMessage.builder()
