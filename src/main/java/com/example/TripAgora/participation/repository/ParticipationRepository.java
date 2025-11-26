@@ -43,9 +43,11 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
     @Query("SELECT COUNT(p) > 0 " +
             "FROM Participation p " +
             "WHERE p.user.id = :userId " +
+            "AND p.session.status != :completedStatus " +
             "AND p.session.startDate <= :endDate " +
             "AND p.session.endDate >= :startDate")
     boolean existsConflictingParticipation(@Param("userId") Long userId,
                                            @Param("startDate") LocalDate startDate,
-                                           @Param("endDate") LocalDate endDate);
+                                           @Param("endDate") LocalDate endDate,
+                                           @Param("completedStatus") SessionStatus completedStatus);
 }
