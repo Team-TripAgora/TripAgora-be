@@ -41,7 +41,8 @@ public class ParticipationService {
         boolean hasConflict = participationRepository.existsConflictingParticipation(
                 userId,
                 session.getStartDate(),
-                session.getEndDate()
+                session.getEndDate(),
+                SessionStatus.COMPLETED
         );
 
         if (hasConflict) {
