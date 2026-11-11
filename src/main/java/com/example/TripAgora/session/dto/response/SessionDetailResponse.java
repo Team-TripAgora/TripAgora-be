@@ -25,4 +25,5 @@ public record SessionDetailResponse(
         boolean isParticipating,
         boolean isMySession,
         boolean isInWishlist,
-        boolean hasWrittenReview) {}
+        boolean hasWrittenReview,
+        Long reviewId) {}

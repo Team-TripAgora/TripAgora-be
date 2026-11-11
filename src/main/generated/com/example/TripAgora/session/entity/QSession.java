@@ -40,7 +40,7 @@ public class QSession extends EntityPathBase<Session> {
 
     public final ListPath<com.example.TripAgora.participation.entity.Participation, com.example.TripAgora.participation.entity.QParticipation> participants = this.<com.example.TripAgora.participation.entity.Participation, com.example.TripAgora.participation.entity.QParticipation>createList("participants", com.example.TripAgora.participation.entity.Participation.class, com.example.TripAgora.participation.entity.QParticipation.class, PathInits.DIRECT2);
 
-    public final ListPath<com.example.TripAgora.wishlist.entity.Wishlist, com.example.TripAgora.wishlist.entity.QWishlist> reviews = this.<com.example.TripAgora.wishlist.entity.Wishlist, com.example.TripAgora.wishlist.entity.QWishlist>createList("reviews", com.example.TripAgora.wishlist.entity.Wishlist.class, com.example.TripAgora.wishlist.entity.QWishlist.class, PathInits.DIRECT2);
+    public final ListPath<com.example.TripAgora.review.entity.Review, com.example.TripAgora.review.entity.QReview> reviews = this.<com.example.TripAgora.review.entity.Review, com.example.TripAgora.review.entity.QReview>createList("reviews", com.example.TripAgora.review.entity.Review.class, com.example.TripAgora.review.entity.QReview.class, PathInits.DIRECT2);
 
     public final com.example.TripAgora.room.entity.QRoom room;
 

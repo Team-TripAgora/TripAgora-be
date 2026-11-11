@@ -18,4 +18,5 @@ public record CompletedSessionResponse(
         LocalDate endDate,
         String status,
         Long roomId,
-        boolean hasWrittenReview) {}
+        boolean hasWrittenReview,
+        Long reviewId) {}

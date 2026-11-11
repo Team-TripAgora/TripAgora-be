@@ -2,6 +2,7 @@ package com.example.TripAgora.session.entity;
 
 import com.example.TripAgora.common.entity.BaseEntity;
 import com.example.TripAgora.participation.entity.Participation;
+import com.example.TripAgora.review.entity.Review;
 import com.example.TripAgora.room.entity.Room;
 import com.example.TripAgora.session.exception.SessionFullException;
 import com.example.TripAgora.template.dto.request.ItineraryItemRequest;
@@ -61,7 +62,7 @@ public class Session extends BaseEntity {
     private List<Wishlist> wishlists = new ArrayList<>();
 
     @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Wishlist> reviews = new ArrayList<>();
+    private List<Review> reviews = new ArrayList<>();
 
     @Builder
     private Session(Template template, Integer maxParticipants, LocalDate startDate) {
