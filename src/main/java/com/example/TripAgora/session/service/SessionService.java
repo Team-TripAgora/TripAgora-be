@@ -6,6 +6,7 @@ import com.example.TripAgora.guideProfile.exception.GuideProfileNotFoundExceptio
 import com.example.TripAgora.participation.entity.Participation;
 import com.example.TripAgora.participation.exception.ParticipationNotFoundException;
 import com.example.TripAgora.participation.repository.ParticipationRepository;
+import com.example.TripAgora.review.entity.Review;
 import com.example.TripAgora.review.repository.ReviewRepository;
 import com.example.TripAgora.room.entity.Room;
 import com.example.TripAgora.room.repository.RoomRepository;
@@ -148,7 +149,10 @@ public class SessionService {
         boolean isParticipating = participationRepository.existsByUser_IdAndSession_Id(userId, sessionId);
         boolean isMySession = Objects.equals(guide.getId(), userId);
         boolean isInWishlist = wishlistRepository.existsByUser_IdAndSession_Id(userId, sessionId);
-        boolean hasWrittenReview = reviewRepository.existsByAuthor_IdAndSession_Id(userId, sessionId);
+        Long reviewId = reviewRepository.findByAuthor_IdAndSession_Id(userId, sessionId)
+                .map(Review::getId)
+                .orElse(null);
+        boolean hasWrittenReview = reviewId != null;
 
         return new SessionDetailResponse(
                 template.getId(),
@@ -168,7 +172,8 @@ public class SessionService {
                 isParticipating,
                 isMySession,
                 isInWishlist,
-                hasWrittenReview
+                hasWrittenReview,
+                reviewId
         );
     }
 
@@ -272,7 +277,10 @@ public class SessionService {
                             .toList();
 
                     Long roomId = (session.getRoom() == null) ? null : session.getRoom().getId();
-                    boolean hasWrittenReview = reviewRepository.existsByAuthor_IdAndSession_Id(userId, session.getId());
+                    Long reviewId = reviewRepository.findByAuthor_IdAndSession_Id(userId, session.getId())
+                            .map(Review::getId)
+                            .orElse(null);
+                    boolean hasWrittenReview = reviewId != null;
 
                     return new CompletedSessionResponse(
                             session.getId(),
@@ -285,7 +293,8 @@ public class SessionService {
                             session.getEndDate(),
                             session.getStatus().name(),
                             roomId,
-                            hasWrittenReview
+                            hasWrittenReview,
+                            reviewId
                     );
                 })
                 .toList();
