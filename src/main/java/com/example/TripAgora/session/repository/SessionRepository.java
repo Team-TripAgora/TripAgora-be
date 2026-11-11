@@ -23,23 +23,25 @@ public interface SessionRepository extends JpaRepository<Session, Long>, Session
     @Query("SELECT COUNT(s) > 0 FROM Session s " +
             "WHERE s.template.guideProfile = :guideProfile " +
             "AND s.id != :excludeSessionId " +
-            "AND s.status IN ('RECRUITING', 'CONFIRMED') " +
+            "AND s.status IN :statuses " +
             "AND s.startDate <= :endDate " +
             "AND s.endDate >= :startDate")
     boolean existsConflictingSession(
             @Param("guideProfile") GuideProfile guideProfile,
             @Param("excludeSessionId") Long excludeSessionId,
+            @Param("statuses") List<SessionStatus> statuses,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
 
     // 특정 가이드의 특정 날짜 범위와 겹치는 세션이 있는지 확인 (신규 생성용)
     @Query("SELECT COUNT(s) > 0 FROM Session s " +
             "WHERE s.template.guideProfile = :guideProfile " +
-            "AND s.status IN ('RECRUITING', 'CONFIRMED') " +
+            "AND s.status IN :statuses " +
             "AND s.startDate <= :endDate " +
             "AND s.endDate >= :startDate")
     boolean existsConflictingSession(
             @Param("guideProfile") GuideProfile guideProfile,
+            @Param("statuses") List<SessionStatus> statuses,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
 

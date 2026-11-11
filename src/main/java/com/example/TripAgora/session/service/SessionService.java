@@ -45,6 +45,13 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class SessionService {
+    // 가이드 일정 충돌 검사 대상: 아직 끝나지 않은 여행
+    private static final List<SessionStatus> SCHEDULE_CONFLICT_STATUSES = List.of(
+            SessionStatus.RECRUITING,
+            SessionStatus.RECRUITMENT_CLOSED,
+            SessionStatus.IN_PROGRESS
+    );
+
     private final TemplateService templateService;
     private final SessionRepository sessionRepository;
     private final UserRepository userRepository;
@@ -62,6 +69,7 @@ public class SessionService {
 
         boolean hasConflict = sessionRepository.existsConflictingSession(
                 template.getGuideProfile(),
+                SCHEDULE_CONFLICT_STATUSES,
                 request.startDate(),
                 endDate
         );
@@ -182,6 +190,7 @@ public class SessionService {
             boolean hasConflict = sessionRepository.existsConflictingSession(
                     session.getTemplate().getGuideProfile(),
                     sessionId,
+                    SCHEDULE_CONFLICT_STATUSES,
                     request.startDate(),
                     newEndDate
             );
