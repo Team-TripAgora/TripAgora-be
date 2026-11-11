@@ -67,7 +67,7 @@ public class UserService {
             throw new InvalidNicknameFormatException();
         }
 
-        if (userRepository.existsByNickname(nickname)) {
+        if (userRepository.existsByNicknameAndIdNot(nickname, userId)) {
             throw new DuplicateNicknameException();
         }
 
