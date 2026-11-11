@@ -222,7 +222,12 @@ public class SessionService {
             throw new GuideProfileNotFoundException();
         }
 
-        Slice<Session> sessionSlice = sessionRepository.findByTemplate_GuideProfileAndStatusIn(guideProfile, statuses, pageable);
+        Slice<Session> sessionSlice;
+        if (statuses == null || statuses.isEmpty()) {
+            sessionSlice = sessionRepository.findByTemplate_GuideProfile(guideProfile, pageable);
+        } else {
+            sessionSlice = sessionRepository.findByTemplate_GuideProfileAndStatusIn(guideProfile, statuses, pageable);
+        }
 
         return getSessionListResponse(sessionSlice);
     }

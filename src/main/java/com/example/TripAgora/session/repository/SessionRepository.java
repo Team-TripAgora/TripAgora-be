@@ -15,7 +15,10 @@ import java.util.List;
 
 @Repository
 public interface SessionRepository extends JpaRepository<Session, Long>, SessionRepositoryCustom {
-    // 특정 가이드의 세션을 상태별로 페이징 조회 (statuses가 null이거나 비어있으면 이 조건은 무시됨)
+    // 특정 가이드의 세션 전체를 페이징 조회
+    Slice<Session> findByTemplate_GuideProfile(GuideProfile guideProfile, Pageable pageable);
+
+    // 특정 가이드의 세션을 상태별로 페이징 조회
     Slice<Session> findByTemplate_GuideProfileAndStatusIn(
             GuideProfile guideProfile, List<SessionStatus> statuses, Pageable pageable);
 
