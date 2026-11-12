@@ -29,14 +29,16 @@ public class FcmService {
 
         MulticastMessage message = MulticastMessage.builder()
                 .setNotification(notification)
+                .setAndroidConfig(androidConfig)
                 .addAllTokens(tokens)
                 .putData("type", "SOS")
                 .putData("sessionId", sessionId.toString())
                 .build();
 
         try {
-            FirebaseMessaging.getInstance().sendEachForMulticast(message);
-            log.info("{}명에게 알림 전송 성공", tokens.size());
+            BatchResponse response = FirebaseMessaging.getInstance().sendEachForMulticast(message);
+            log.info("FCM 전송 결과 - 대상: {}건, 성공: {}건, 실패: {}건",
+                    tokens.size(), response.getSuccessCount(), response.getFailureCount());
         } catch (Exception e) {
             log.error("FCM 전송 실패", e);
         }

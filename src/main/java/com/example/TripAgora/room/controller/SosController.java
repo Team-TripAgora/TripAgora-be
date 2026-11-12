@@ -21,7 +21,7 @@ public class SosController {
     @PostMapping("/users/me/fcm-token")
     public ApiResponse<Void> updateFcmToken(@AuthenticationPrincipal final long userId,
                                             @Valid @RequestBody FcmTokenRequest request) {
-        sosService.updateFcmToken(userId, request.getToken());
+        sosService.updateFcmToken(userId, request.token());
         return ApiResponse.success(SuccessCode.OK);
     }
 
