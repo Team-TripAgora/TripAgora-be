@@ -72,7 +72,7 @@ public class TripController {
         return ApiResponse.success(SuccessCode.OK);
     }
 
-    @GetMapping("/my")
+    @GetMapping("/me")
     public ApiResponse<TripListResponse> getMyTrips(@AuthenticationPrincipal final long userId,
                                                           @RequestParam(required = false) List<TripStatus> statuses,
                                                           @PageableDefault(size = 10) Pageable pageable) {

@@ -35,7 +35,7 @@ public class TemplateController {
         return ApiResponse.success(SuccessCode.OK, response);
     }
 
-    @GetMapping("/my")
+    @GetMapping("/me")
     public ApiResponse<TemplateListResponse> getMyTemplates(@AuthenticationPrincipal final long userId,
                                                             @PageableDefault(size = 10) Pageable pageable) {
         TemplateListResponse response = templateService.getMyTemplates(userId, pageable);

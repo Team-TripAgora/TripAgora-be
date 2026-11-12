@@ -24,7 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class GuideProfileController {
     private final GuideProfileService guideProfileService;
 
-    @GetMapping("/my")
+    @GetMapping("/me")
     public ApiResponse<GuideProfileDetailResponse> getMyGuideProfileDetails(@AuthenticationPrincipal final long userId,
                                                                             @PageableDefault(size = 10) Pageable pageable) {
         GuideProfileDetailResponse response = guideProfileService.getMyGuideProfileDetails(userId, pageable);
