@@ -48,7 +48,7 @@ public class ReviewService {
 
     public ReviewResponse createReview(Long userId, ReviewCreateRequest request) {
         User author = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
-        Trip trip = tripRepository.findById(request.sessionId()).orElseThrow(TripNotFoundException::new);
+        Trip trip = tripRepository.findById(request.tripId()).orElseThrow(TripNotFoundException::new);
         Template template = trip.getTemplate();
         GuideProfile guideProfile = template.getGuideProfile();
 
@@ -58,7 +58,7 @@ public class ReviewService {
              throw new TripNotCompletedException();
         }
 
-        if (reviewRepository.existsByAuthor_IdAndTrip_Id(userId, request.sessionId())) {
+        if (reviewRepository.existsByAuthor_IdAndTrip_Id(userId, request.tripId())) {
             throw new AlreadyReviewedException();
         }
 

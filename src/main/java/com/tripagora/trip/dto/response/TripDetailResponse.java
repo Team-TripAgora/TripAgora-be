@@ -23,7 +23,7 @@ public record TripDetailResponse(
         List<TripParticipantResponse> participants,
         Long guideProfileId,
         boolean isParticipating,
-        boolean isMySession,
+        boolean isMyTrip,
         boolean isInWishlist,
         boolean hasWrittenReview,
         Long reviewId) {}

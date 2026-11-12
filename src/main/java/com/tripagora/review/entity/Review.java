@@ -18,8 +18,8 @@ import lombok.NoArgsConstructor;
         name = "review",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "uk_review_author_session",
-                        columnNames = {"author_id", "session_id"}
+                        name = "uk_review_author_trip",
+                        columnNames = {"author_id", "trip_id"}
                 )
         }
 )
@@ -33,7 +33,7 @@ public class Review extends BaseEntity {
     private User author;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "session_id", nullable = false)
+    @JoinColumn(name = "trip_id", nullable = false)
     private Trip trip;
 
     @ManyToOne(fetch = FetchType.LAZY)

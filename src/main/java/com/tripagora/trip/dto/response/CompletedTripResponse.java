@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public record CompletedTripResponse(
-        Long sessionId,
+        Long tripId,
         String title,
         String firstImageUrl,
         List<Long> regionIds,

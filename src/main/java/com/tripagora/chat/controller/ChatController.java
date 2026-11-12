@@ -16,11 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/chat")
+@RequestMapping("/api/rooms")
 public class ChatController {
     private final ChatService chatService;
 
-    @GetMapping("/room/{roomId}/messages")
+    @GetMapping("/{roomId}/messages")
     public ApiResponse<ChatHistoryResponse> getChatMessages(@AuthenticationPrincipal final long userId,
                                                             @PathVariable Long roomId,
                                                             @PageableDefault(size = 30, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
