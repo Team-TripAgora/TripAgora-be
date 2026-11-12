@@ -1,4 +1,4 @@
-package com.tripagora.guideProfile.dto.request;
+package com.tripagora.guideprofile.dto.request;
 
 import jakarta.validation.constraints.Size;
 

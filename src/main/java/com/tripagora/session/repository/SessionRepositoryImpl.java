@@ -17,7 +17,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.List;
 
-import static com.tripagora.guideProfile.entity.QGuideProfile.guideProfile;
+import static com.tripagora.guideprofile.entity.QGuideProfile.guideProfile;
 import static com.tripagora.region.entity.QRegion.region;
 import static com.tripagora.region.entity.QTemplateRegion.templateRegion;
 import static com.tripagora.session.entity.QSession.session;

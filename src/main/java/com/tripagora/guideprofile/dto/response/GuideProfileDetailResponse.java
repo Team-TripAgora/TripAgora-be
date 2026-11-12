@@ -1,4 +1,4 @@
-package com.tripagora.guideProfile.dto.response;
+package com.tripagora.guideprofile.dto.response;
 
 import com.tripagora.session.dto.response.SessionListResponse;
 

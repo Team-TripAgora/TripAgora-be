@@ -1,8 +1,8 @@
 package com.tripagora.session.service;
 
 import com.tripagora.auth.exception.AccessDeniedException;
-import com.tripagora.guideProfile.entity.GuideProfile;
-import com.tripagora.guideProfile.exception.GuideProfileNotFoundException;
+import com.tripagora.guideprofile.entity.GuideProfile;
+import com.tripagora.guideprofile.exception.GuideProfileNotFoundException;
 import com.tripagora.participation.entity.Participation;
 import com.tripagora.participation.exception.ParticipationNotFoundException;
 import com.tripagora.participation.repository.ParticipationRepository;

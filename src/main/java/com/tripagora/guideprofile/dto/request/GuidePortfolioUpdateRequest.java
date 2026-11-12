@@ -1,6 +1,6 @@
-package com.tripagora.guideProfile.dto.request;
+package com.tripagora.guideprofile.dto.request;
 
-import com.tripagora.guideProfile.entity.GuidePortfolio;
+import com.tripagora.guideprofile.entity.GuidePortfolio;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import org.hibernate.validator.constraints.URL;

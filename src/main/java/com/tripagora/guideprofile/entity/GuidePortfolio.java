@@ -1,4 +1,4 @@
-package com.tripagora.guideProfile.entity;
+package com.tripagora.guideprofile.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

@@ -2,7 +2,7 @@ package com.tripagora.user.controller;
 
 import com.tripagora.common.code.SuccessCode;
 import com.tripagora.common.response.ApiResponse;
-import com.tripagora.guideProfile.service.GuideProfileService;
+import com.tripagora.guideprofile.service.GuideProfileService;
 import com.tripagora.user.dto.request.NicknameUpdateRequest;
 import com.tripagora.user.dto.request.UserTagUpdateRequest;
 import com.tripagora.user.dto.response.*;

@@ -1,14 +1,14 @@
-package com.tripagora.guideProfile.controller;
+package com.tripagora.guideprofile.controller;
 
 import com.tripagora.common.code.SuccessCode;
 import com.tripagora.common.response.ApiResponse;
-import com.tripagora.guideProfile.dto.request.GuideBioUpdateRequest;
-import com.tripagora.guideProfile.dto.request.GuidePortfolioUpdateRequest;
-import com.tripagora.guideProfile.dto.response.GuideBioUpdateResponse;
-import com.tripagora.guideProfile.dto.response.GuideImageUpdateResponse;
-import com.tripagora.guideProfile.dto.response.GuidePortfolioUpdateResponse;
-import com.tripagora.guideProfile.dto.response.GuideProfileDetailResponse;
-import com.tripagora.guideProfile.service.GuideProfileService;
+import com.tripagora.guideprofile.dto.request.GuideBioUpdateRequest;
+import com.tripagora.guideprofile.dto.request.GuidePortfolioUpdateRequest;
+import com.tripagora.guideprofile.dto.response.GuideBioUpdateResponse;
+import com.tripagora.guideprofile.dto.response.GuideImageUpdateResponse;
+import com.tripagora.guideprofile.dto.response.GuidePortfolioUpdateResponse;
+import com.tripagora.guideprofile.dto.response.GuideProfileDetailResponse;
+import com.tripagora.guideprofile.service.GuideProfileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;

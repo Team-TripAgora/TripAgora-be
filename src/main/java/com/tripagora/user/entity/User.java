@@ -1,7 +1,7 @@
 package com.tripagora.user.entity;
 
 import com.tripagora.common.entity.BaseEntity;
-import com.tripagora.guideProfile.entity.GuideProfile;
+import com.tripagora.guideprofile.entity.GuideProfile;
 import com.tripagora.participation.entity.Participation;
 import com.tripagora.review.entity.Review;
 import com.tripagora.tag.entity.UserTag;

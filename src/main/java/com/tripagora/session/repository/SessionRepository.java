@@ -1,6 +1,6 @@
 package com.tripagora.session.repository;
 
-import com.tripagora.guideProfile.entity.GuideProfile;
+import com.tripagora.guideprofile.entity.GuideProfile;
 import com.tripagora.session.entity.Session;
 import com.tripagora.session.entity.SessionStatus;
 import org.springframework.data.domain.Pageable;

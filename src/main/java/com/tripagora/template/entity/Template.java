@@ -1,7 +1,7 @@
 package com.tripagora.template.entity;
 
 import com.tripagora.common.entity.BaseEntity;
-import com.tripagora.guideProfile.entity.GuideProfile;
+import com.tripagora.guideprofile.entity.GuideProfile;
 import com.tripagora.region.entity.TemplateRegion;
 import com.tripagora.review.entity.Review;
 import com.tripagora.session.entity.Session;

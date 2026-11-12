@@ -1,6 +1,6 @@
-package com.tripagora.guideProfile.repository;
+package com.tripagora.guideprofile.repository;
 
-import com.tripagora.guideProfile.entity.GuideProfile;
+import com.tripagora.guideprofile.entity.GuideProfile;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

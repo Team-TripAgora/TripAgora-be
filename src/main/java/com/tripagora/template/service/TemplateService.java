@@ -2,8 +2,8 @@ package com.tripagora.template.service;
 
 import com.tripagora.auth.exception.AccessDeniedException;
 import com.tripagora.common.image.service.ImageService;
-import com.tripagora.guideProfile.entity.GuideProfile;
-import com.tripagora.guideProfile.exception.GuideProfileNotFoundException;
+import com.tripagora.guideprofile.entity.GuideProfile;
+import com.tripagora.guideprofile.exception.GuideProfileNotFoundException;
 import com.tripagora.region.entity.Region;
 import com.tripagora.region.entity.TemplateRegion;
 import com.tripagora.region.exception.InvalidRegionSelectionException;

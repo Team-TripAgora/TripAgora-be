@@ -1,16 +1,16 @@
-package com.tripagora.guideProfile.service;
+package com.tripagora.guideprofile.service;
 
 import com.tripagora.auth.dto.ReissueResponse;
 import com.tripagora.auth.service.JWTService;
 import com.tripagora.common.image.service.ImageService;
-import com.tripagora.guideProfile.dto.request.GuideBioUpdateRequest;
-import com.tripagora.guideProfile.dto.request.GuidePortfolioUpdateRequest;
-import com.tripagora.guideProfile.dto.response.*;
-import com.tripagora.guideProfile.entity.GuideProfile;
-import com.tripagora.guideProfile.exception.AlreadyGuideException;
-import com.tripagora.guideProfile.exception.AlreadyTravelerException;
-import com.tripagora.guideProfile.exception.GuideProfileNotFoundException;
-import com.tripagora.guideProfile.repository.GuideProfileRepository;
+import com.tripagora.guideprofile.dto.request.GuideBioUpdateRequest;
+import com.tripagora.guideprofile.dto.request.GuidePortfolioUpdateRequest;
+import com.tripagora.guideprofile.dto.response.*;
+import com.tripagora.guideprofile.entity.GuideProfile;
+import com.tripagora.guideprofile.exception.AlreadyGuideException;
+import com.tripagora.guideprofile.exception.AlreadyTravelerException;
+import com.tripagora.guideprofile.exception.GuideProfileNotFoundException;
+import com.tripagora.guideprofile.repository.GuideProfileRepository;
 import com.tripagora.session.dto.response.SessionListResponse;
 import com.tripagora.session.entity.Session;
 import com.tripagora.session.entity.SessionStatus;

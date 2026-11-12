@@ -1,6 +1,6 @@
 package com.tripagora.review.repository;
 
-import com.tripagora.guideProfile.entity.GuideProfile;
+import com.tripagora.guideprofile.entity.GuideProfile;
 import com.tripagora.review.entity.Review;
 import com.tripagora.template.entity.Template;
 import org.springframework.data.domain.Pageable;

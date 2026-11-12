@@ -1,7 +1,7 @@
-package com.tripagora.guideProfile.entity;
+package com.tripagora.guideprofile.entity;
 
 import com.tripagora.common.entity.BaseEntity;
-import com.tripagora.guideProfile.dto.request.GuidePortfolioUpdateRequest;
+import com.tripagora.guideprofile.dto.request.GuidePortfolioUpdateRequest;
 import com.tripagora.template.entity.Template;
 import com.tripagora.user.entity.User;
 import jakarta.persistence.*;

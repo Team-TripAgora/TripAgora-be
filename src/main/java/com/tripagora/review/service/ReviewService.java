@@ -1,9 +1,9 @@
 package com.tripagora.review.service;
 
 import com.tripagora.auth.exception.AccessDeniedException;
-import com.tripagora.guideProfile.entity.GuideProfile;
-import com.tripagora.guideProfile.exception.GuideProfileNotFoundException;
-import com.tripagora.guideProfile.repository.GuideProfileRepository;
+import com.tripagora.guideprofile.entity.GuideProfile;
+import com.tripagora.guideprofile.exception.GuideProfileNotFoundException;
+import com.tripagora.guideprofile.repository.GuideProfileRepository;
 import com.tripagora.participation.repository.ParticipationRepository;
 import com.tripagora.review.dto.request.ReviewCreateRequest;
 import com.tripagora.review.dto.request.ReviewUpdateRequest;

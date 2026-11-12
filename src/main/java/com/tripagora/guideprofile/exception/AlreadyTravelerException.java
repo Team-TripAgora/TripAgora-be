@@ -1,4 +1,4 @@
-package com.tripagora.guideProfile.exception;
+package com.tripagora.guideprofile.exception;
 
 import com.tripagora.common.code.GuideProfileErrorCode;
 
