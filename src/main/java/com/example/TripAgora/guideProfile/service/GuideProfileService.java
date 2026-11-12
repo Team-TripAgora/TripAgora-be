@@ -64,7 +64,6 @@ public class GuideProfileService {
 
         ReissueResponse tokenResponse = jwtService.issueTokensForUser(user);
         return new GuideSwitchResponse(tokenResponse.accessToken(), tokenResponse.refreshToken(), profile.getId());
-        // TODO: 가이드용 홈화면 확정 후 수정
     }
 
     @Transactional
@@ -78,7 +77,6 @@ public class GuideProfileService {
         user.updateRole(Role.TRAVELER);
         ReissueResponse tokenResponse = jwtService.issueTokensForUser(user);
         return new TravelerSwitchResponse(tokenResponse.accessToken(), tokenResponse.refreshToken(), user.getId());
-        // TODO: 여행객용 홈화면 확정 후 수정
     }
 
     @Transactional(readOnly = true)

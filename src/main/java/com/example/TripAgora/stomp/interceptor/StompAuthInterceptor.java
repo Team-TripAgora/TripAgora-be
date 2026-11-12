@@ -4,7 +4,6 @@ import com.example.TripAgora.auth.exception.AccessTokenInvalidException;
 import com.example.TripAgora.auth.exception.UnAuthorizedAccessException;
 import com.example.TripAgora.auth.util.JWTUtil;
 import com.example.TripAgora.stomp.exception.InvalidDestinationException;
-import com.example.TripAgora.participation.entity.Participation;
 import com.example.TripAgora.participation.exception.ParticipationNotFoundException;
 import com.example.TripAgora.participation.repository.ParticipationRepository;
 import com.example.TripAgora.room.entity.Room;
@@ -83,7 +82,7 @@ public class StompAuthInterceptor implements ChannelInterceptor {
             Room room = roomRepository.findById(roomId).orElseThrow(RoomNotFoundException::new);
             Long sessionId = room.getSession().getId();
 
-            Participation participation = participationRepository.findByUser_IdAndSession_Id(userId, sessionId)
+            participationRepository.findByUser_IdAndSession_Id(userId, sessionId)
                     .orElseThrow(ParticipationNotFoundException::new);
 
             log.info("STOMP SUBSCRIBE 성공 - userId: {}, roomId: {}", userId, roomId);

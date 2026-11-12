@@ -42,6 +42,7 @@ public class WishlistService {
         wishlistRepository.save(wishlist);
     }
 
+    @Transactional
     public void removeSessionFromWishlist(long userId, long sessionId) {
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
         Session session = sessionRepository.findById(sessionId).orElseThrow(SessionNotFoundException::new);
