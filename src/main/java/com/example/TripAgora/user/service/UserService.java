@@ -20,6 +20,7 @@ import com.example.TripAgora.user.exception.InvalidNicknameFormatException;
 import com.example.TripAgora.user.exception.UserNotFoundException;
 import com.example.TripAgora.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -67,12 +68,19 @@ public class UserService {
             throw new InvalidNicknameFormatException();
         }
 
-        if (userRepository.existsByNickname(nickname)) {
+        if (userRepository.existsByNicknameAndIdNot(nickname, userId)) {
             throw new DuplicateNicknameException();
         }
 
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
         user.updateNickname(nickname);
+
+        // 중복 확인 후 다른 요청이 같은 닉네임을 먼저 저장한 경우 unique 제약 위반을 중복 예외로 바꾼다
+        try {
+            userRepository.flush();
+        } catch (DataIntegrityViolationException e) {
+            throw new DuplicateNicknameException();
+        }
 
         return new NicknameUpdateResponse(user.getNickname());
     }
