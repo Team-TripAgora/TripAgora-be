@@ -16,7 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import({TestcontainersConfig.class, DatabaseCleaner.class})
+@Import({TestcontainersConfig.class, DatabaseCleaner.class, QueryCounter.class})
 public abstract class IntegrationTest {
     // FirebaseConfig 는 serviceAccountKey.json(git 제외)을 읽으므로 테스트에서는 대체한다
     @MockitoBean
@@ -31,6 +31,9 @@ public abstract class IntegrationTest {
 
     @Autowired
     protected JWTUtil jwtUtil;
+
+    @Autowired
+    protected QueryCounter queryCounter;
 
     @Autowired
     private DatabaseCleaner databaseCleaner;
