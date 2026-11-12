@@ -29,6 +29,7 @@ public class FcmService {
 
         MulticastMessage message = MulticastMessage.builder()
                 .setNotification(notification)
+                .setAndroidConfig(androidConfig)
                 .addAllTokens(tokens)
                 .putData("type", "SOS")
                 .putData("sessionId", sessionId.toString())
