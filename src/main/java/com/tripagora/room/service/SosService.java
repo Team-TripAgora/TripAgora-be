@@ -36,7 +36,7 @@ public class SosService {
         User sender = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
         Room room = roomRepository.findById(roomId).orElseThrow(RoomNotFoundException::new);
 
-        List<String> targetTokens = room.getSession().getParticipants().stream()
+        List<String> targetTokens = room.getTrip().getParticipants().stream()
                 .map(Participation::getUser)
                 .filter(user -> !Objects.equals(user.getId(), userId)) // 보낸 사람(나) 제외
                 .map(User::getFcmToken)
@@ -46,9 +46,9 @@ public class SosService {
         if (!targetTokens.isEmpty()) {
             String title = "🚨 긴급 SOS 요청";
             String body = String.format("'%s'님이 긴급 도움을 요청했습니다!", sender.getNickname());
-            Long sessionId = room.getSession().getId();
+            Long tripId = room.getTrip().getId();
 
-            fcmService.sendMulticastMessage(targetTokens, title, body, sessionId);
+            fcmService.sendMulticastMessage(targetTokens, title, body, tripId);
         }
     }
 }

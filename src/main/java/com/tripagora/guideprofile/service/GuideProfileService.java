@@ -11,11 +11,11 @@ import com.tripagora.guideprofile.exception.AlreadyGuideException;
 import com.tripagora.guideprofile.exception.AlreadyTravelerException;
 import com.tripagora.guideprofile.exception.GuideProfileNotFoundException;
 import com.tripagora.guideprofile.repository.GuideProfileRepository;
-import com.tripagora.session.dto.response.SessionListResponse;
-import com.tripagora.session.entity.Session;
-import com.tripagora.session.entity.SessionStatus;
-import com.tripagora.session.repository.SessionRepository;
-import com.tripagora.session.service.SessionService;
+import com.tripagora.trip.dto.response.TripListResponse;
+import com.tripagora.trip.entity.Trip;
+import com.tripagora.trip.entity.TripStatus;
+import com.tripagora.trip.repository.TripRepository;
+import com.tripagora.trip.service.TripService;
 import com.tripagora.user.dto.response.GuideSwitchResponse;
 import com.tripagora.user.dto.response.TravelerSwitchResponse;
 import com.tripagora.user.entity.Role;
@@ -39,7 +39,7 @@ public class GuideProfileService {
     private final JWTService jwtService;
     private final UserRepository userRepository;
     private final GuideProfileRepository guideProfileRepository;
-    private final SessionRepository sessionRepository;
+    private final TripRepository tripRepository;
     private final ImageService imageService;
 
     @Transactional
@@ -106,11 +106,11 @@ public class GuideProfileService {
                         portfolio.getUrl()))
                 .collect(Collectors.toList());
 
-        List<SessionStatus> statuses = new ArrayList<>();
-        statuses.add(SessionStatus.RECRUITING);
-        Slice<Session> sessionSlice = sessionRepository.findByTemplate_GuideProfileAndStatusIn(guideProfile, statuses, pageable);
+        List<TripStatus> statuses = new ArrayList<>();
+        statuses.add(TripStatus.RECRUITING);
+        Slice<Trip> tripSlice = tripRepository.findByTemplate_GuideProfileAndStatusIn(guideProfile, statuses, pageable);
 
-        SessionListResponse sessionListResponse = SessionService.getSessionListResponse(sessionSlice);
+        TripListResponse tripListResponse = TripService.getTripListResponse(tripSlice);
 
         return new GuideProfileDetailResponse(
                 user.getNickname(),
@@ -119,7 +119,7 @@ public class GuideProfileService {
                 guideProfile.getBio(),
                 tagIds,
                 portfolios,
-                sessionListResponse
+                tripListResponse
         );
     }
 

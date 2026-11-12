@@ -1,6 +1,6 @@
 package com.tripagora.guideprofile.dto.response;
 
-import com.tripagora.session.dto.response.SessionListResponse;
+import com.tripagora.trip.dto.response.TripListResponse;
 
 import java.util.List;
 
@@ -11,4 +11,4 @@ public record GuideProfileDetailResponse(
         String bio,
         List<Long> tags,
         List<PortfolioResponse> portfolios,
-        SessionListResponse SessionList) {}
+        TripListResponse SessionList) {}

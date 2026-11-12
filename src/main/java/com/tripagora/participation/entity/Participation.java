@@ -1,7 +1,7 @@
 package com.tripagora.participation.entity;
 
 import com.tripagora.common.entity.BaseEntity;
-import com.tripagora.session.entity.Session;
+import com.tripagora.trip.entity.Trip;
 import com.tripagora.user.entity.Role;
 import com.tripagora.user.entity.User;
 import jakarta.persistence.*;
@@ -27,7 +27,7 @@ public class Participation extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "session_id")
-    private Session session;
+    private Trip trip;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -37,9 +37,9 @@ public class Participation extends BaseEntity {
     private LocalDateTime lastChatReadAt;
 
     @Builder
-    public Participation(User user, Session session, Role role) {
+    public Participation(User user, Trip trip, Role role) {
         this.user = user;
-        this.session = session;
+        this.trip = trip;
         this.role = role;
     }
 

@@ -15,9 +15,9 @@ public class ParticipationController {
     private final ParticipationService participationService;
 
     @PostMapping("/sessions/{sessionId}")
-    public ApiResponse<ParticipationResponse> applyForSession(@AuthenticationPrincipal final long userId,
+    public ApiResponse<ParticipationResponse> applyForTrip(@AuthenticationPrincipal final long userId,
                                                               @PathVariable final long sessionId) {
-        ParticipationResponse response = participationService.applyForSession(userId, sessionId);
+        ParticipationResponse response = participationService.applyForTrip(userId, sessionId);
         return ApiResponse.success(SuccessCode.OK, response);
     }
 

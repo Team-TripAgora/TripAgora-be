@@ -13,8 +13,8 @@ import java.util.Optional;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
-    boolean existsByAuthor_IdAndSession_Id(Long authorId, Long sessionId);
-    Optional<Review> findByAuthor_IdAndSession_Id(Long authorId, Long sessionId);
+    boolean existsByAuthor_IdAndTrip_Id(Long authorId, Long tripId);
+    Optional<Review> findByAuthor_IdAndTrip_Id(Long authorId, Long tripId);
     List<Review> findByTemplate(Template template);
     Slice<Review> findByTemplate(Template template, Pageable pageable);
     Slice<Review> findByGuideProfile(GuideProfile guideProfile, Pageable pageable);

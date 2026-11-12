@@ -19,8 +19,8 @@ public class RoomService {
 
     protected Room checkRoomAndGuide(long userId, long roomId) {
         Room room = roomRepository.findById(roomId).orElseThrow(RoomNotFoundException::new);
-        Long sessionId = room.getSession().getId();
-        Participation participation = participationRepository.findByUser_IdAndSession_Id(userId, sessionId).orElseThrow(ParticipationNotFoundException::new);
+        Long tripId = room.getTrip().getId();
+        Participation participation = participationRepository.findByUser_IdAndTrip_Id(userId, tripId).orElseThrow(ParticipationNotFoundException::new);
 
         if (participation.getRole() != Role.GUIDE) {
             throw new AccessDeniedException();
@@ -31,8 +31,8 @@ public class RoomService {
 
     protected Room checkRoomAndParticipant(long userId, long roomId) {
         Room room = roomRepository.findById(roomId).orElseThrow(RoomNotFoundException::new);
-        Long sessionId = room.getSession().getId();
-        participationRepository.findByUser_IdAndSession_Id(userId, sessionId).orElseThrow(ParticipationNotFoundException::new);
+        Long tripId = room.getTrip().getId();
+        participationRepository.findByUser_IdAndTrip_Id(userId, tripId).orElseThrow(ParticipationNotFoundException::new);
 
         return room;
     }

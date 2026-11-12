@@ -4,10 +4,10 @@ import com.tripagora.participation.dto.response.ParticipationResponse;
 import com.tripagora.participation.entity.Participation;
 import com.tripagora.participation.exception.*;
 import com.tripagora.participation.repository.ParticipationRepository;
-import com.tripagora.session.entity.Session;
-import com.tripagora.session.entity.SessionStatus;
-import com.tripagora.session.exception.SessionNotFoundException;
-import com.tripagora.session.repository.SessionRepository;
+import com.tripagora.trip.entity.Trip;
+import com.tripagora.trip.entity.TripStatus;
+import com.tripagora.trip.exception.TripNotFoundException;
+import com.tripagora.trip.repository.TripRepository;
 import com.tripagora.user.entity.Role;
 import com.tripagora.user.entity.User;
 import com.tripagora.user.exception.UserNotFoundException;
@@ -20,69 +20,69 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ParticipationService {
     private final ParticipationRepository participationRepository;
-    private final SessionRepository sessionRepository;
+    private final TripRepository tripRepository;
     private final UserRepository userRepository;
 
     @Transactional
-    public ParticipationResponse applyForSession(Long userId, Long sessionId) {
+    public ParticipationResponse applyForTrip(Long userId, Long tripId) {
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
-        Session session = sessionRepository.findById(sessionId).orElseThrow(SessionNotFoundException::new);
+        Trip trip = tripRepository.findById(tripId).orElseThrow(TripNotFoundException::new);
 
-        validateSessionStatus(session);
+        validateTripStatus(trip);
 
-        if (session.getTemplate().getGuideProfile().getUser().getId().equals(userId)) {
-            throw new CannotParticipateInOwnSessionException();
+        if (trip.getTemplate().getGuideProfile().getUser().getId().equals(userId)) {
+            throw new CannotParticipateInOwnTripException();
         }
 
-        participationRepository.findByUser_IdAndSession_Id(userId, sessionId).ifPresent(p -> {
+        participationRepository.findByUser_IdAndTrip_Id(userId, tripId).ifPresent(p -> {
             throw new AlreadyParticipatingException();
         });
 
         boolean hasConflict = participationRepository.existsConflictingParticipation(
                 userId,
-                session.getStartDate(),
-                session.getEndDate(),
-                SessionStatus.COMPLETED
+                trip.getStartDate(),
+                trip.getEndDate(),
+                TripStatus.COMPLETED
         );
 
         if (hasConflict) {
             throw new ConflictingParticipationException();
         }
 
-        session.increaseParticipant();
+        trip.increaseParticipant();
 
         Participation participation = Participation.builder()
                 .user(user)
-                .session(session)
+                .trip(trip)
                 .role(Role.TRAVELER)
                 .build();
 
         participationRepository.save(participation);
-        session.addParticipation(participation);
+        trip.addParticipation(participation);
 
         return new ParticipationResponse(
                 participation.getId(),
-                session.getId(),
-                session.getCurrentParticipants()
+                trip.getId(),
+                trip.getCurrentParticipants()
         );
     }
 
     @Transactional
-    public void cancelParticipation(Long userId, Long sessionId) {
-        Session session = sessionRepository.findById(sessionId).orElseThrow(SessionNotFoundException::new);
+    public void cancelParticipation(Long userId, Long tripId) {
+        Trip trip = tripRepository.findById(tripId).orElseThrow(TripNotFoundException::new);
 
-        Participation participation = participationRepository.findByUser_IdAndSession_Id(userId, sessionId)
+        Participation participation = participationRepository.findByUser_IdAndTrip_Id(userId, tripId)
                 .orElseThrow(ParticipationNotFoundException::new);
 
-        validateSessionStatus(session);
+        validateTripStatus(trip);
 
-        session.decreaseParticipant();
+        trip.decreaseParticipant();
         participationRepository.delete(participation);
     }
 
-    private void validateSessionStatus(Session session) {
-        if (session.getStatus() != SessionStatus.RECRUITING &&
-            session.getStatus() != SessionStatus.COMPLETED) {
+    private void validateTripStatus(Trip trip) {
+        if (trip.getStatus() != TripStatus.RECRUITING &&
+            trip.getStatus() != TripStatus.COMPLETED) {
             throw new ParticipationCancelNotAllowedException();
         }
     }

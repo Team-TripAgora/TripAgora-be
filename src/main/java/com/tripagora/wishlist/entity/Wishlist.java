@@ -1,7 +1,7 @@
 package com.tripagora.wishlist.entity;
 
 import com.tripagora.common.entity.BaseEntity;
-import com.tripagora.session.entity.Session;
+import com.tripagora.trip.entity.Trip;
 import com.tripagora.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -23,11 +23,11 @@ public class Wishlist extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "session_id", nullable = false)
-    private Session session;
+    private Trip trip;
 
     @Builder
-    private Wishlist(User user, Session session) {
+    private Wishlist(User user, Trip trip) {
         this.user = user;
-        this.session = session;
+        this.trip = trip;
     }
 }

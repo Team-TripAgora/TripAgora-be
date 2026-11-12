@@ -13,12 +13,12 @@ import com.tripagora.review.entity.Review;
 import com.tripagora.review.exception.AlreadyReviewedException;
 import com.tripagora.review.exception.ReviewNotAllowedException;
 import com.tripagora.review.exception.ReviewNotFoundException;
-import com.tripagora.review.exception.SessionNotCompletedException;
+import com.tripagora.review.exception.TripNotCompletedException;
 import com.tripagora.review.repository.ReviewRepository;
-import com.tripagora.session.entity.Session;
-import com.tripagora.session.entity.SessionStatus;
-import com.tripagora.session.exception.SessionNotFoundException;
-import com.tripagora.session.repository.SessionRepository;
+import com.tripagora.trip.entity.Trip;
+import com.tripagora.trip.entity.TripStatus;
+import com.tripagora.trip.exception.TripNotFoundException;
+import com.tripagora.trip.repository.TripRepository;
 import com.tripagora.template.entity.Template;
 import com.tripagora.template.exception.TemplateNotFoundException;
 import com.tripagora.template.repository.TemplateRepository;
@@ -41,30 +41,30 @@ import java.util.Objects;
 public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
-    private final SessionRepository sessionRepository;
+    private final TripRepository tripRepository;
     private final TemplateRepository templateRepository;
     private final ParticipationRepository participationRepository;
     private final GuideProfileRepository guideProfileRepository;
 
     public ReviewResponse createReview(Long userId, ReviewCreateRequest request) {
         User author = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
-        Session session = sessionRepository.findById(request.sessionId()).orElseThrow(SessionNotFoundException::new);
-        Template template = session.getTemplate();
+        Trip trip = tripRepository.findById(request.sessionId()).orElseThrow(TripNotFoundException::new);
+        Template template = trip.getTemplate();
         GuideProfile guideProfile = template.getGuideProfile();
 
-        validateReviewer(author, session);
+        validateReviewer(author, trip);
 
-        if (session.getStatus() != SessionStatus.COMPLETED) {
-             throw new SessionNotCompletedException();
+        if (trip.getStatus() != TripStatus.COMPLETED) {
+             throw new TripNotCompletedException();
         }
 
-        if (reviewRepository.existsByAuthor_IdAndSession_Id(userId, request.sessionId())) {
+        if (reviewRepository.existsByAuthor_IdAndTrip_Id(userId, request.sessionId())) {
             throw new AlreadyReviewedException();
         }
 
         Review review = Review.builder()
                 .author(author)
-                .session(session)
+                .trip(trip)
                 .template(template)
                 .guideProfile(guideProfile)
                 .content(request.content())
@@ -201,8 +201,8 @@ public class ReviewService {
         guideProfile.updateRating(avgOfTemplateAvgs, totalReviewCount);
     }
 
-    private void validateReviewer(User user, Session session) {
-        participationRepository.findByUser_IdAndSession_Id(user.getId(), session.getId())
+    private void validateReviewer(User user, Trip trip) {
+        participationRepository.findByUser_IdAndTrip_Id(user.getId(), trip.getId())
                 .filter(p -> p.getRole() == Role.TRAVELER)
                 .orElseThrow(ReviewNotAllowedException::new);
     }

@@ -11,7 +11,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class FcmService {
-    public void sendMulticastMessage(List<String> tokens, String title, String body, Long sessionId) {
+    public void sendMulticastMessage(List<String> tokens, String title, String body, Long tripId) {
         if (tokens == null || tokens.isEmpty()) {
             return;
         }
@@ -32,7 +32,7 @@ public class FcmService {
                 .setAndroidConfig(androidConfig)
                 .addAllTokens(tokens)
                 .putData("type", "SOS")
-                .putData("sessionId", sessionId.toString())
+                .putData("sessionId", tripId.toString())
                 .build();
 
         try {

@@ -1,10 +1,10 @@
 package com.tripagora.wishlist.service;
 
-import com.tripagora.session.dto.response.SessionListResponse;
-import com.tripagora.session.entity.Session;
-import com.tripagora.session.exception.SessionNotFoundException;
-import com.tripagora.session.repository.SessionRepository;
-import com.tripagora.session.service.SessionService;
+import com.tripagora.trip.dto.response.TripListResponse;
+import com.tripagora.trip.entity.Trip;
+import com.tripagora.trip.exception.TripNotFoundException;
+import com.tripagora.trip.repository.TripRepository;
+import com.tripagora.trip.service.TripService;
 import com.tripagora.user.entity.User;
 import com.tripagora.user.exception.UserNotFoundException;
 import com.tripagora.user.repository.UserRepository;
@@ -23,43 +23,43 @@ import org.springframework.transaction.annotation.Transactional;
 public class WishlistService {
     private final WishlistRepository wishlistRepository;
     private final UserRepository userRepository;
-    private final SessionRepository sessionRepository;
+    private final TripRepository tripRepository;
 
     @Transactional
-    public void addSessionToWishlist(long userId, long sessionId) {
+    public void addTripToWishlist(long userId, long tripId) {
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
-        Session session = sessionRepository.findById(sessionId).orElseThrow(SessionNotFoundException::new);
+        Trip trip = tripRepository.findById(tripId).orElseThrow(TripNotFoundException::new);
 
-        wishlistRepository.findByUserAndSession(user, session).ifPresent(like -> {
+        wishlistRepository.findByUserAndTrip(user, trip).ifPresent(like -> {
             throw new AlreadyInWishlistException();
         });
 
         Wishlist wishlist = Wishlist.builder()
                 .user(user)
-                .session(session)
+                .trip(trip)
                 .build();
 
         wishlistRepository.save(wishlist);
     }
 
     @Transactional
-    public void removeSessionFromWishlist(long userId, long sessionId) {
+    public void removeTripFromWishlist(long userId, long tripId) {
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
-        Session session = sessionRepository.findById(sessionId).orElseThrow(SessionNotFoundException::new);
+        Trip trip = tripRepository.findById(tripId).orElseThrow(TripNotFoundException::new);
 
-        Wishlist wishlist = wishlistRepository.findByUserAndSession(user, session)
+        Wishlist wishlist = wishlistRepository.findByUserAndTrip(user, trip)
                 .orElseThrow(WishlistNotFoundException::new);
 
         wishlistRepository.delete(wishlist);
     }
 
     @Transactional(readOnly = true)
-    public SessionListResponse getMyWishlist(long userId, Pageable pageable) {
+    public TripListResponse getMyWishlist(long userId, Pageable pageable) {
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
         Slice<Wishlist> wishlistSlice = wishlistRepository.findByUser(user, pageable);
-        Slice<Session> sessionSlice = wishlistSlice.map(Wishlist::getSession);
+        Slice<Trip> tripSlice = wishlistSlice.map(Wishlist::getTrip);
 
-        return SessionService.getSessionListResponse(sessionSlice);
+        return TripService.getTripListResponse(tripSlice);
     }
 }

@@ -1,6 +1,6 @@
 package com.tripagora.wishlist.repository;
 
-import com.tripagora.session.entity.Session;
+import com.tripagora.trip.entity.Trip;
 import com.tripagora.user.entity.User;
 import com.tripagora.wishlist.entity.Wishlist;
 import org.springframework.data.domain.Pageable;
@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @Repository
 public interface WishlistRepository extends JpaRepository<Wishlist, Long> {
-    Optional<Wishlist> findByUserAndSession(User user, Session session);
-    boolean existsByUser_IdAndSession_Id(Long userId, Long sessionId);
+    Optional<Wishlist> findByUserAndTrip(User user, Trip trip);
+    boolean existsByUser_IdAndTrip_Id(Long userId, Long tripId);
     Slice<Wishlist> findByUser(User user, Pageable pageable);
 }

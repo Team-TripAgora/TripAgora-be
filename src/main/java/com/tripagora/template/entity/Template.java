@@ -4,7 +4,7 @@ import com.tripagora.common.entity.BaseEntity;
 import com.tripagora.guideprofile.entity.GuideProfile;
 import com.tripagora.region.entity.TemplateRegion;
 import com.tripagora.review.entity.Review;
-import com.tripagora.session.entity.Session;
+import com.tripagora.trip.entity.Trip;
 import com.tripagora.tag.entity.TemplateTag;
 import com.tripagora.template.dto.request.ItineraryItemRequest;
 import jakarta.persistence.*;
@@ -55,7 +55,7 @@ public class Template extends BaseEntity {
     private List<TemplateRegion> templateRegions = new ArrayList<>();
 
     @OneToMany(mappedBy = "template", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Session> sessions = new ArrayList<>();
+    private List<Trip> trips = new ArrayList<>();
 
     @OneToMany(mappedBy = "template", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Review> reviews = new ArrayList<>();

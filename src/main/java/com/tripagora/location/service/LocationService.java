@@ -29,7 +29,7 @@ public class LocationService {
         Participation participation = checkAndGetParticipation(userId, roomId);
 
         User user = participation.getUser();
-        Room room = participation.getSession().getRoom();
+        Room room = participation.getTrip().getRoom();
 
         UserLocation userLocation = userLocationRepository.findByUser_IdAndRoom_Id(userId, roomId)
                 .orElseGet(() -> UserLocation.builder()
@@ -73,9 +73,9 @@ public class LocationService {
 
     private Participation checkAndGetParticipation(Long userId, Long roomId) {
         Room room = roomRepository.findById(roomId).orElseThrow(RoomNotFoundException::new);
-        Long sessionId = room.getSession().getId();
+        Long tripId = room.getTrip().getId();
 
-        return participationRepository.findByUser_IdAndSession_Id(userId, sessionId)
+        return participationRepository.findByUser_IdAndTrip_Id(userId, tripId)
                 .orElseThrow(ParticipationNotFoundException::new);
     }
 }

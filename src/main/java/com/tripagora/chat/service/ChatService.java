@@ -32,7 +32,7 @@ public class ChatService {
         Participation participation = checkAndGetParticipation(userId, roomId);
 
         User sender = participation.getUser();
-        Room room = participation.getSession().getRoom();
+        Room room = participation.getTrip().getRoom();
 
         ChatMessage chatMessage = ChatMessage.builder()
                 .room(room)
@@ -79,9 +79,9 @@ public class ChatService {
 
     private Participation checkAndGetParticipation(Long userId, Long roomId) {
         Room room = roomRepository.findById(roomId).orElseThrow(RoomNotFoundException::new);
-        Long sessionId = room.getSession().getId();
+        Long tripId = room.getTrip().getId();
 
-        return participationRepository.findByUser_IdAndSession_Id(userId, sessionId)
+        return participationRepository.findByUser_IdAndTrip_Id(userId, tripId)
                 .orElseThrow(ParticipationNotFoundException::new);
     }
 }

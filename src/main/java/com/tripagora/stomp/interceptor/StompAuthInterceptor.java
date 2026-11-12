@@ -80,9 +80,9 @@ public class StompAuthInterceptor implements ChannelInterceptor {
             Long userId = (Long) auth.getPrincipal();
             Long roomId = Long.parseLong(parts[3]);
             Room room = roomRepository.findById(roomId).orElseThrow(RoomNotFoundException::new);
-            Long sessionId = room.getSession().getId();
+            Long tripId = room.getTrip().getId();
 
-            participationRepository.findByUser_IdAndSession_Id(userId, sessionId)
+            participationRepository.findByUser_IdAndTrip_Id(userId, tripId)
                     .orElseThrow(ParticipationNotFoundException::new);
 
             log.info("STOMP SUBSCRIBE 성공 - userId: {}, roomId: {}", userId, roomId);

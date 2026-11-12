@@ -2,7 +2,7 @@ package com.tripagora.review.entity;
 
 import com.tripagora.common.entity.BaseEntity;
 import com.tripagora.guideprofile.entity.GuideProfile;
-import com.tripagora.session.entity.Session;
+import com.tripagora.trip.entity.Trip;
 import com.tripagora.template.entity.Template;
 import com.tripagora.user.entity.User;
 import jakarta.persistence.*;
@@ -34,7 +34,7 @@ public class Review extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "session_id", nullable = false)
-    private Session session;
+    private Trip trip;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "template_id", nullable = false)
@@ -51,9 +51,9 @@ public class Review extends BaseEntity {
     private Integer rating;
 
     @Builder
-    private Review(User author, Session session, Template template, GuideProfile guideProfile, String content, Integer rating) {
+    private Review(User author, Trip trip, Template template, GuideProfile guideProfile, String content, Integer rating) {
         this.author = author;
-        this.session = session;
+        this.trip = trip;
         this.template = template;
         this.guideProfile = guideProfile;
         this.content = content;
