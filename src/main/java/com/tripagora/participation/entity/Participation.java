@@ -26,7 +26,7 @@ public class Participation extends BaseEntity {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "session_id")
+    @JoinColumn(name = "trip_id")
     private Trip trip;
 
     @Enumerated(EnumType.STRING)
