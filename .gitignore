@@ -42,3 +42,6 @@ application-main.yml
 
 ### Firebase Admin Key ###
 src/main/resources/serviceAccountKey.json
+
+### QueryDSL ###
+src/main/generated/
