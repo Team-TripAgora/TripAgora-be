@@ -23,17 +23,17 @@ public class WishlistController {
         return ApiResponse.success(SuccessCode.OK, response);
     }
 
-    @PostMapping("/{sessionId}")
+    @PostMapping("/{tripId}")
     public ApiResponse<Void> addTripToWishlist(@AuthenticationPrincipal final long userId,
-                                                  @PathVariable final long sessionId) {
-        wishlistService.addTripToWishlist(userId, sessionId);
+                                                  @PathVariable final long tripId) {
+        wishlistService.addTripToWishlist(userId, tripId);
         return ApiResponse.success(SuccessCode.OK);
     }
 
-    @DeleteMapping("/{sessionId}")
+    @DeleteMapping("/{tripId}")
     public ApiResponse<Void> removeTripFromWishlist(@AuthenticationPrincipal final long userId,
-                                                       @PathVariable final long sessionId) {
-        wishlistService.removeTripFromWishlist(userId, sessionId);
+                                                       @PathVariable final long tripId) {
+        wishlistService.removeTripFromWishlist(userId, tripId);
         return ApiResponse.success(SuccessCode.OK);
     }
 }

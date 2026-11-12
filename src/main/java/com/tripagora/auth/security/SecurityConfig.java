@@ -30,8 +30,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login/**", "/api/auth/reissue", "/actuator/health", "/connect/**").permitAll()
                         .requestMatchers("/api/guides/**", "api/templates/**").hasRole("GUIDE")
-                        .requestMatchers(HttpMethod.GET, "/api/sessions/**").authenticated()
-                        .requestMatchers("/api/sessions/**").hasRole("GUIDE")
+                        .requestMatchers(HttpMethod.GET, "/api/trips/**").authenticated()
+                        .requestMatchers("/api/trips/**").hasRole("GUIDE")
                         .requestMatchers(HttpMethod.GET, "/api/rooms/{roomId}/notices/**").authenticated()
                         .requestMatchers("/api/rooms/{roomId}/notices/**").hasRole("GUIDE")
                         .anyRequest().authenticated())

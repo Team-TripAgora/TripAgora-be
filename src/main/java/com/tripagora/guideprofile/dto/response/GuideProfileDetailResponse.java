@@ -11,4 +11,4 @@ public record GuideProfileDetailResponse(
         String bio,
         List<Long> tags,
         List<PortfolioResponse> portfolios,
-        TripListResponse SessionList) {}
+        TripListResponse trips) {}

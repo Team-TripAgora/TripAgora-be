@@ -14,17 +14,17 @@ import org.springframework.web.bind.annotation.*;
 public class ParticipationController {
     private final ParticipationService participationService;
 
-    @PostMapping("/sessions/{sessionId}")
+    @PostMapping("/trips/{tripId}")
     public ApiResponse<ParticipationResponse> applyForTrip(@AuthenticationPrincipal final long userId,
-                                                              @PathVariable final long sessionId) {
-        ParticipationResponse response = participationService.applyForTrip(userId, sessionId);
+                                                              @PathVariable final long tripId) {
+        ParticipationResponse response = participationService.applyForTrip(userId, tripId);
         return ApiResponse.success(SuccessCode.OK, response);
     }
 
-    @DeleteMapping("/sessions/{sessionId}")
+    @DeleteMapping("/trips/{tripId}")
     public ApiResponse<Void> cancelParticipation(@AuthenticationPrincipal final long userId,
-                                                 @PathVariable final long sessionId) {
-        participationService.cancelParticipation(userId, sessionId);
+                                                 @PathVariable final long tripId) {
+        participationService.cancelParticipation(userId, tripId);
         return ApiResponse.success(SuccessCode.OK);
     }
 }

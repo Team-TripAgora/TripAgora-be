@@ -32,7 +32,7 @@ public class FcmService {
                 .setAndroidConfig(androidConfig)
                 .addAllTokens(tokens)
                 .putData("type", "SOS")
-                .putData("sessionId", tripId.toString())
+                .putData("tripId", tripId.toString())
                 .build();
 
         try {

@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/sessions")
+@RequestMapping("/api/trips")
 @RequiredArgsConstructor
 public class TripController {
     private final TripService tripService;
@@ -35,40 +35,40 @@ public class TripController {
         return ApiResponse.success(SuccessCode.CREATED, response);
     }
 
-    @GetMapping("/{sessionId}")
+    @GetMapping("/{tripId}")
     public ApiResponse<TripDetailResponse> getTripDetails(@AuthenticationPrincipal final long userId,
-                                                                @PathVariable final long sessionId) {
-        TripDetailResponse response = tripService.getTripDetails(userId, sessionId);
+                                                                @PathVariable final long tripId) {
+        TripDetailResponse response = tripService.getTripDetails(userId, tripId);
         return ApiResponse.success(SuccessCode.OK, response);
     }
 
-    @PatchMapping("/{sessionId}")
+    @PatchMapping("/{tripId}")
     public ApiResponse<Void> updateTrip(@AuthenticationPrincipal final long userId,
-                                           @PathVariable final long sessionId,
+                                           @PathVariable final long tripId,
                                            @RequestBody @Valid final TripUpdateRequest request) {
-        tripService.updateTrip(userId, sessionId, request);
+        tripService.updateTrip(userId, tripId, request);
         return ApiResponse.success(SuccessCode.OK);
     }
 
-    @DeleteMapping("/{sessionId}")
+    @DeleteMapping("/{tripId}")
     public ApiResponse<Void> deleteTrip(@AuthenticationPrincipal final long userId,
-                                           @PathVariable final long sessionId) {
-        tripService.deleteTrip(userId, sessionId);
+                                           @PathVariable final long tripId) {
+        tripService.deleteTrip(userId, tripId);
         return ApiResponse.success(SuccessCode.OK);
     }
 
-    @GetMapping("/{sessionId}/itineraries")
+    @GetMapping("/{tripId}/itineraries")
     public ApiResponse<ItinerariesResponse> getItineraries(@AuthenticationPrincipal final long userId,
-                                                           @PathVariable final long sessionId) {
-        ItinerariesResponse response = tripService.getItineraries(sessionId);
+                                                           @PathVariable final long tripId) {
+        ItinerariesResponse response = tripService.getItineraries(tripId);
         return ApiResponse.success(SuccessCode.OK, response);
     }
 
-    @PutMapping("/{sessionId}/itineraries")
+    @PutMapping("/{tripId}/itineraries")
     public ApiResponse<Void> updateItineraries(@AuthenticationPrincipal final long userId,
-                                               @PathVariable final long sessionId,
+                                               @PathVariable final long tripId,
                                                @RequestBody @Valid final ItineraryUpdateRequest request) {
-        tripService.updateItineraries(userId, sessionId, request);
+        tripService.updateItineraries(userId, tripId, request);
         return ApiResponse.success(SuccessCode.OK);
     }
 
@@ -96,10 +96,10 @@ public class TripController {
         return ApiResponse.success(SuccessCode.OK, response);
     }
 
-    @PostMapping("/{sessionId}/close")
+    @PostMapping("/{tripId}/close")
     public ApiResponse<Void> closeRecruitment(@AuthenticationPrincipal final long userId,
-                                              @PathVariable final long sessionId) {
-        tripService.closeRecruitment(userId, sessionId);
+                                              @PathVariable final long tripId) {
+        tripService.closeRecruitment(userId, tripId);
         return ApiResponse.success(SuccessCode.OK);
     }
 

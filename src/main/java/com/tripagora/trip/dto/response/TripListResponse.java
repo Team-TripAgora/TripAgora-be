@@ -3,5 +3,5 @@ package com.tripagora.trip.dto.response;
 import java.util.List;
 
 public record TripListResponse(
-        List<TripSummaryResponse> sessions,
+        List<TripSummaryResponse> trips,
         boolean hasNext) {}

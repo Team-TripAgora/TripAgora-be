@@ -6,8 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record ReviewCreateRequest(
-        @NotNull(message = "세션 ID는 필수입니다.")
-        Long sessionId,
+        @NotNull(message = "여행 ID는 필수입니다.")
+        Long tripId,
 
         @NotBlank(message = "리뷰 내용은 필수입니다.")
         String content,
