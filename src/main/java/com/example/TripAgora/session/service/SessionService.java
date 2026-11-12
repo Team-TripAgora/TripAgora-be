@@ -344,7 +344,7 @@ public class SessionService {
         Room room = Room.builder()
                 .session(session)
                 .build();
-        Room savedRoom = roomRepository.save(room);
+        roomRepository.save(room);
         session.assignRoom(room);
     }
 
