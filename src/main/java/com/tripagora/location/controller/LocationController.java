@@ -14,12 +14,12 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/location")
+@RequestMapping("/api/rooms")
 @RequiredArgsConstructor
 public class LocationController {
     private final LocationService locationService;
 
-    @GetMapping("rooms/{roomId}/locations")
+    @GetMapping("/{roomId}/locations")
     public ApiResponse<List<LocationResponse>> getLocations(@AuthenticationPrincipal final long userId,
                                                             @PathVariable final long roomId) {
         List<LocationResponse> response = locationService.getRoomLocations(userId, roomId);
