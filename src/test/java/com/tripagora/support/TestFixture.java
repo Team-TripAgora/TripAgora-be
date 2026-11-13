@@ -46,8 +46,19 @@ public class TestFixture {
                 "VALUES (?, NOW(6), NOW(6), 0, ?, ?, 4, ?, ?)", id, startDate, endDate, status.name(), templateId);
     }
 
+    // 여행 일정 (여행을 개설할 때 템플릿 일정을 복사해 두는 테이블)
+    public void tripItinerary(long tripId, int day) {
+        jdbcTemplate.update("INSERT INTO trip_itinerary (created_at, modified_at, content, day, latitude, location, longitude, start_time, trip_id) " +
+                "VALUES (NOW(6), NOW(6), ?, ?, 37.5, ?, 127.0, '10:00:00', ?)", day + "일차", day, "장소" + day, tripId);
+    }
+
     public void room(long id, long tripId) {
         jdbcTemplate.update("INSERT INTO room (id, created_at, modified_at, trip_id) VALUES (?, NOW(6), NOW(6), ?)", id, tripId);
+    }
+
+    public void notice(long id, long roomId) {
+        jdbcTemplate.update("INSERT INTO notice (id, created_at, modified_at, content, title, room_id) " +
+                "VALUES (?, NOW(6), NOW(6), '10시까지 모여주세요', ?, ?)", id, "공지" + id, roomId);
     }
 
     public void participation(long id, long tripId, long userId, Role role) {
