@@ -19,8 +19,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Objects;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -30,13 +30,14 @@ public class ImageService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
     private static final String FOLDER_NAME = "images/";
+    private static final Pattern EXTENSION = Pattern.compile("[a-z0-9]{1,5}");
 
     public String uploadImage(MultipartFile file) {
         // 1. 파일 유효성 검사
         validateImageFile(file);
 
-        // 2. 고유한 파일 이름 생성
-        String fileName = createStoreFileName(Objects.requireNonNull(file.getOriginalFilename()));
+        // 2. 고유한 파일 이름 생성 (원본 확장자 유지)
+        String fileName = createStoreFileName(extensionOf(file.getOriginalFilename(), file.getContentType()));
 
         // 3. S3에 업로드
         try {
@@ -58,7 +59,7 @@ public class ImageService {
             return null;
         }
 
-        String fileName = createStoreFileName(UUID.randomUUID() + ".jpg");
+        String fileName = createStoreFileName("jpg");
 
         try (InputStream inputStream = new URL(imageUrl).openStream()) {
             ObjectMetadata metadata = new ObjectMetadata();
@@ -108,9 +109,27 @@ public class ImageService {
         }
     }
 
-    private String createStoreFileName(String originalFilename) {
+    // images/{uuid}.{확장자}. 확장자를 정하지 못하면 붙이지 않는다
+    private String createStoreFileName(String extension) {
         String uuid = UUID.randomUUID().toString();
-        return FOLDER_NAME + uuid + ".jpg";
+        return extension == null ? FOLDER_NAME + uuid : FOLDER_NAME + uuid + "." + extension;
+    }
+
+    // 확장자는 원본 파일 이름에서 정한다. 없거나 형식이 이상하면 Content-Type으로 정한다 (image/png → png, image/jpeg → jpg)
+    private String extensionOf(String originalFilename, String contentType) {
+        String fromFilename = StringUtils.getFilenameExtension(originalFilename);
+        if (fromFilename != null && EXTENSION.matcher(fromFilename.toLowerCase()).matches()) {
+            return fromFilename.toLowerCase();
+        }
+        return extensionOf(contentType);
+    }
+
+    private String extensionOf(String contentType) {
+        String subtype = contentType.substring(contentType.indexOf('/') + 1).split(";")[0].trim().toLowerCase();
+        if (subtype.equals("jpeg")) {
+            return "jpg";
+        }
+        return EXTENSION.matcher(subtype).matches() ? subtype : null;
     }
 
     private String extractFileNameFromUrl(String imageUrl) {
