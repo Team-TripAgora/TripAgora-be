@@ -16,11 +16,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Objects;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URLConnection;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -30,13 +30,16 @@ public class ImageService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
     private static final String FOLDER_NAME = "images/";
+    private static final Pattern EXTENSION = Pattern.compile("[a-z0-9]{1,5}");
+    // 외부 URL에서 이미지를 받을 때 연결·읽기를 기다리는 최대 시간
+    private static final int DOWNLOAD_TIMEOUT_MS = 5_000;
 
     public String uploadImage(MultipartFile file) {
         // 1. 파일 유효성 검사
         validateImageFile(file);
 
-        // 2. 고유한 파일 이름 생성
-        String fileName = createStoreFileName(Objects.requireNonNull(file.getOriginalFilename()));
+        // 2. 고유한 파일 이름 생성 (원본 확장자 유지)
+        String fileName = createStoreFileName(extensionOf(file.getOriginalFilename(), file.getContentType()));
 
         // 3. S3에 업로드
         try {
@@ -53,21 +56,43 @@ public class ImageService {
         return amazonS3.getUrl(bucketName, fileName).toString();
     }
 
+    // 외부 URL(소셜 프로필 사진)의 이미지를 받아 올린다. 응답의 Content-Type으로 형식을 정하고, 이미지가 아니면 올리지 않는다
     public String uploadImageFromUrl(String imageUrl) {
         if (!StringUtils.hasText(imageUrl)) {
             return null;
         }
 
-        String fileName = createStoreFileName(UUID.randomUUID() + ".jpg");
+        try {
+            URLConnection connection = URI.create(imageUrl).toURL().openConnection();
+            connection.setConnectTimeout(DOWNLOAD_TIMEOUT_MS);
+            connection.setReadTimeout(DOWNLOAD_TIMEOUT_MS);
+            connection.connect();
 
-        try (InputStream inputStream = new URL(imageUrl).openStream()) {
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentType("image/jpeg");
+            // 응답 코드를 먼저 읽어 타임아웃·오류 응답을 실패로 처리한다 (getContentType()은 읽기 오류를 삼키고 null을 돌려준다)
+            if (connection instanceof HttpURLConnection httpConnection && httpConnection.getResponseCode() / 100 != 2) {
+                throw new ImageUploadFailedException();
+            }
 
-            amazonS3.putObject(new PutObjectRequest(bucketName, fileName, inputStream, metadata));
+            String contentType = connection.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                throw new UnSupportedImageFormatException();
+            }
+            String mimeType = contentType.split(";")[0].trim();
+            String fileName = createStoreFileName(extensionOf(mimeType));
+
+            try (InputStream inputStream = connection.getInputStream()) {
+                ObjectMetadata metadata = new ObjectMetadata();
+                metadata.setContentType(mimeType);
+                long contentLength = connection.getContentLengthLong();
+                if (contentLength >= 0) {
+                    metadata.setContentLength(contentLength);
+                }
+
+                amazonS3.putObject(new PutObjectRequest(bucketName, fileName, inputStream, metadata));
+            }
             return amazonS3.getUrl(bucketName, fileName).toString();
 
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException e) {
             throw new ImageUploadFailedException();
         }
     }
@@ -108,21 +133,42 @@ public class ImageService {
         }
     }
 
-    private String createStoreFileName(String originalFilename) {
+    // images/{uuid}.{확장자}. 확장자를 정하지 못하면 붙이지 않는다
+    private String createStoreFileName(String extension) {
         String uuid = UUID.randomUUID().toString();
-        return FOLDER_NAME + uuid + ".jpg";
+        return extension == null ? FOLDER_NAME + uuid : FOLDER_NAME + uuid + "." + extension;
     }
 
+    // 확장자는 원본 파일 이름에서 정한다. 없거나 형식이 이상하면 Content-Type으로 정한다 (image/png → png, image/jpeg → jpg)
+    private String extensionOf(String originalFilename, String contentType) {
+        String fromFilename = StringUtils.getFilenameExtension(originalFilename);
+        if (fromFilename != null && EXTENSION.matcher(fromFilename.toLowerCase()).matches()) {
+            return fromFilename.toLowerCase();
+        }
+        return extensionOf(contentType);
+    }
+
+    private String extensionOf(String contentType) {
+        String subtype = contentType.substring(contentType.indexOf('/') + 1).split(";")[0].trim().toLowerCase();
+        if (subtype.equals("jpeg")) {
+            return "jpg";
+        }
+        return EXTENSION.matcher(subtype).matches() ? subtype : null;
+    }
+
+    // S3 이미지 주소(https://{버킷}.s3.{리전}.amazonaws.com/images/...)를 파싱해 파일 키를 꺼낸다.
+    // 호스트가 이 버킷이고 경로가 images/ 아래일 때만 받는다. 경로는 %인코딩이 풀린 값이고 쿼리는 포함하지 않는다
     private String extractFileNameFromUrl(String imageUrl) {
         try {
-            String bucketUrl = "https://" + bucketName + ".s3.";
-            int startIndex = imageUrl.indexOf(bucketUrl);
-            if (startIndex == -1) {
+            URI uri = URI.create(imageUrl);
+            String host = uri.getHost();
+            String path = uri.getPath();
+            if (!"https".equals(uri.getScheme()) || host == null || !host.startsWith(bucketName + ".s3.")
+                    || path == null || !path.startsWith("/" + FOLDER_NAME)) {
                 throw new InvalidImageUrlFormatException();
             }
-            String path = imageUrl.substring(imageUrl.indexOf(FOLDER_NAME));
-            return URLDecoder.decode(path, StandardCharsets.UTF_8);
-        } catch (Exception e) {
+            return path.substring(1);
+        } catch (IllegalArgumentException e) {
             throw new InvalidImageUrlFormatException();
         }
     }

@@ -4,6 +4,7 @@ import com.tripagora.auth.dto.*;
 import com.tripagora.auth.exception.SocialAccessTokenInvalidException;
 import com.tripagora.auth.exception.SocialJsonParseErrorException;
 import com.tripagora.auth.util.JWTUtil;
+import com.tripagora.common.image.exception.ImageException;
 import com.tripagora.common.image.service.ImageService;
 import com.tripagora.user.entity.SocialType;
 import com.tripagora.user.entity.User;
@@ -11,6 +12,7 @@ import com.tripagora.user.repository.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -23,6 +25,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LoginService {
@@ -35,6 +38,7 @@ public class LoginService {
 
     private final String KAKAO_USERINFO_URL = "https://kapi.kakao.com/v2/user/me";
     private final String NAVER_USERINFO_URL = "https://openapi.naver.com/v1/nid/me";
+    private static final String NO_PROFILE_IMAGE = "";
 
     @Transactional
     public SocialLoginResponse socialLogin(SocialLoginRequest request, SocialType socialType) {
@@ -104,7 +108,7 @@ public class LoginService {
             isNewUser.set(false);
             return userOpt.get();
         } else {
-            String s3ImageUrl = imageService.uploadImageFromUrl(profileImageUrl);
+            String s3ImageUrl = uploadProfileImage(profileImageUrl);
 
             User newUser = User.builder()
                     .socialId(socialId)
@@ -114,6 +118,18 @@ public class LoginService {
             isNewUser.set(true);
 
             return userRepository.save(newUser);
+        }
+    }
+
+    // 프로필 사진은 나중에 바꿀 수 있으므로, 소셜 프로필 사진을 가져오지 못해도 가입은 막지 않는다.
+    // image_url 컬럼이 NOT NULL이라 사진이 없으면 빈 문자열로 둔다 (앱은 빈 값이면 기본 아바타를 보여 준다)
+    private String uploadProfileImage(String profileImageUrl) {
+        try {
+            String uploadedImageUrl = imageService.uploadImageFromUrl(profileImageUrl);
+            return uploadedImageUrl == null ? NO_PROFILE_IMAGE : uploadedImageUrl;
+        } catch (ImageException e) {
+            log.warn("소셜 프로필 사진을 가져오지 못해 사진 없이 가입합니다: {}", e.getMessage());
+            return NO_PROFILE_IMAGE;
         }
     }
 
