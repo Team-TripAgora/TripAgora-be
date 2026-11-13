@@ -65,6 +65,7 @@ class SocialLoginProfileImageTest extends IntegrationTest {
         imageServer = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
         imageServer.setExecutor(imageServerThreads);
         imageServer.createContext("/profile.png", exchange -> respond(exchange, "image/png", new byte[]{1, 2, 3}));
+        imageServer.createContext("/not-image", exchange -> respond(exchange, "text/html", "<html></html>".getBytes()));
         imageServer.start();
 
         when(amazonS3.getUrl(anyString(), anyString())).thenAnswer(invocation ->
@@ -92,6 +93,16 @@ class SocialLoginProfileImageTest extends IntegrationTest {
     @DisplayName("프로필 사진 주소에 연결할 수 없으면 사진 없이 가입한다")
     void signsUpWithoutImageWhenDownloadFails() throws Exception {
         kakaoReturnsProfileImage("http://localhost:" + closedPort() + "/profile.png");
+
+        login().andExpect(status().isOk()).andExpect(jsonPath("$.data.isNewUser").value(true));
+
+        assertThat(savedImageUrl()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("프로필 사진 주소가 이미지가 아니면 사진 없이 가입한다")
+    void signsUpWithoutImageWhenUrlIsNotImage() throws Exception {
+        kakaoReturnsProfileImage("http://localhost:" + imageServer.getAddress().getPort() + "/not-image");
 
         login().andExpect(status().isOk()).andExpect(jsonPath("$.data.isNewUser").value(true));
 

@@ -16,7 +16,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
@@ -31,6 +33,8 @@ public class ImageService {
     private String bucketName;
     private static final String FOLDER_NAME = "images/";
     private static final Pattern EXTENSION = Pattern.compile("[a-z0-9]{1,5}");
+    // 외부 URL에서 이미지를 받을 때 연결·읽기를 기다리는 최대 시간
+    private static final int DOWNLOAD_TIMEOUT_MS = 5_000;
 
     public String uploadImage(MultipartFile file) {
         // 1. 파일 유효성 검사
@@ -54,21 +58,43 @@ public class ImageService {
         return amazonS3.getUrl(bucketName, fileName).toString();
     }
 
+    // 외부 URL(소셜 프로필 사진)의 이미지를 받아 올린다. 응답의 Content-Type으로 형식을 정하고, 이미지가 아니면 올리지 않는다
     public String uploadImageFromUrl(String imageUrl) {
         if (!StringUtils.hasText(imageUrl)) {
             return null;
         }
 
-        String fileName = createStoreFileName("jpg");
+        try {
+            URLConnection connection = URI.create(imageUrl).toURL().openConnection();
+            connection.setConnectTimeout(DOWNLOAD_TIMEOUT_MS);
+            connection.setReadTimeout(DOWNLOAD_TIMEOUT_MS);
+            connection.connect();
 
-        try (InputStream inputStream = new URL(imageUrl).openStream()) {
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentType("image/jpeg");
+            // 응답 코드를 먼저 읽어 타임아웃·오류 응답을 실패로 처리한다 (getContentType()은 읽기 오류를 삼키고 null을 돌려준다)
+            if (connection instanceof HttpURLConnection httpConnection && httpConnection.getResponseCode() / 100 != 2) {
+                throw new ImageUploadFailedException();
+            }
 
-            amazonS3.putObject(new PutObjectRequest(bucketName, fileName, inputStream, metadata));
+            String contentType = connection.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                throw new UnSupportedImageFormatException();
+            }
+            String mimeType = contentType.split(";")[0].trim();
+            String fileName = createStoreFileName(extensionOf(mimeType));
+
+            try (InputStream inputStream = connection.getInputStream()) {
+                ObjectMetadata metadata = new ObjectMetadata();
+                metadata.setContentType(mimeType);
+                long contentLength = connection.getContentLengthLong();
+                if (contentLength >= 0) {
+                    metadata.setContentLength(contentLength);
+                }
+
+                amazonS3.putObject(new PutObjectRequest(bucketName, fileName, inputStream, metadata));
+            }
             return amazonS3.getUrl(bucketName, fileName).toString();
 
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException e) {
             throw new ImageUploadFailedException();
         }
     }
