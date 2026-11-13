@@ -60,8 +60,9 @@ public class Template extends BaseEntity {
     private List<Review> reviews = new ArrayList<>();
 
 
+    // 템플릿은 빈 초안으로 만들고, 제목·내용은 필드별 수정 API로 채운다
     @Builder
-    private Template(GuideProfile guideProfile, String title, String content) {
+    private Template(GuideProfile guideProfile) {
         this.guideProfile = guideProfile;
         this.title = "";
         this.content = "";
