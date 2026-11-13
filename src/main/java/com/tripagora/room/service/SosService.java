@@ -23,14 +23,6 @@ public class SosService {
     private final RoomRepository roomRepository;
     private final FcmService fcmService;
 
-    // 1. FCM 토큰 저장/갱신 (로그인 시 호출)
-    @Transactional
-    public void updateFcmToken(Long userId, String token) {
-        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
-
-        user.updateFcmToken(token);
-    }
-
     @Transactional(readOnly = true)
     public void sendSos(Long userId, Long roomId) {
         User sender = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);

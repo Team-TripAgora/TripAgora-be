@@ -117,7 +117,10 @@ public class LoginService {
         }
     }
 
+    // 로그아웃한 기기로 SOS 알림이 가지 않도록 FCM 토큰도 지운다
+    @Transactional
     public void logout(Long userId) {
         jwtService.deleteRefreshTokenByUserId(userId);
+        userRepository.findById(userId).ifPresent(user -> user.updateFcmToken(null));
     }
 }

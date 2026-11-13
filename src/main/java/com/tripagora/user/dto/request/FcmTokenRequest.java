@@ -1,4 +1,4 @@
-package com.tripagora.room.dto.request;
+package com.tripagora.user.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 

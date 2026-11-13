@@ -51,6 +51,17 @@ public class UserService {
     }
 
     @Transactional
+    public void updateFcmToken(long userId, String token) {
+        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+
+        // 같은 기기에서 다른 계정으로 로그인한 경우: 토큰은 마지막에 등록한 계정의 것으로 두고 이전 계정에서는 지운다
+        userRepository.findAllByFcmTokenAndIdNot(token, userId)
+                .forEach(previousOwner -> previousOwner.updateFcmToken(null));
+
+        user.updateFcmToken(token);
+    }
+
+    @Transactional
     public void withdrawUser(long userId) {
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
         refreshTokenRepository.deleteByUserId(userId);
