@@ -1,7 +1,6 @@
 package com.tripagora.guideprofile.entity;
 
 import com.tripagora.common.entity.BaseEntity;
-import com.tripagora.guideprofile.dto.request.GuidePortfolioUpdateRequest;
 import com.tripagora.template.entity.Template;
 import com.tripagora.user.entity.User;
 import jakarta.persistence.*;
@@ -57,18 +56,9 @@ public class GuideProfile extends BaseEntity {
         this.imageUrl = imageUrl;
     }
 
-    public void updatePortfolios(List<GuidePortfolioUpdateRequest.PortfolioItem> newPortfolios) {
+    public void updatePortfolios(List<GuidePortfolio> newPortfolios) {
         this.portfolios.clear();
-
-        if (newPortfolios != null) {
-            newPortfolios.forEach(item -> {
-                this.portfolios.add(GuidePortfolio.builder()
-                        .guideProfile(this)
-                        .type(item.type())
-                        .url(item.url())
-                        .build());
-            });
-        }
+        this.portfolios.addAll(newPortfolios);
     }
 
     public void updateRating(double newAverage, int newReviewCount) {

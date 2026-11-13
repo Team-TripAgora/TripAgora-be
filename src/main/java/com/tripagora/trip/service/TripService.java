@@ -380,7 +380,7 @@ public class TripService {
         }
 
         trip.clearItineraries();
-        request.itineraries().forEach(trip::addItinerary);
+        request.itineraries().forEach(item -> trip.addItinerary(item.toTripItinerary(trip)));
     }
 
     private Trip findTripAndVerifyOwner(long userId, long tripId) {

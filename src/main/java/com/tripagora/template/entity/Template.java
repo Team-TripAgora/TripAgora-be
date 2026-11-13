@@ -2,11 +2,12 @@ package com.tripagora.template.entity;
 
 import com.tripagora.common.entity.BaseEntity;
 import com.tripagora.guideprofile.entity.GuideProfile;
+import com.tripagora.region.entity.Region;
 import com.tripagora.region.entity.TemplateRegion;
 import com.tripagora.review.entity.Review;
 import com.tripagora.trip.entity.Trip;
+import com.tripagora.tag.entity.Tag;
 import com.tripagora.tag.entity.TemplateTag;
-import com.tripagora.template.dto.request.ItineraryItemRequest;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -15,6 +16,8 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -61,8 +64,9 @@ public class Template extends BaseEntity {
     private List<Review> reviews = new ArrayList<>();
 
 
+    // 템플릿은 빈 초안으로 만들고, 제목·내용은 필드별 수정 API로 채운다
     @Builder
-    private Template(GuideProfile guideProfile, String title, String content) {
+    private Template(GuideProfile guideProfile) {
         this.guideProfile = guideProfile;
         this.title = "";
         this.content = "";
@@ -98,16 +102,33 @@ public class Template extends BaseEntity {
         this.templateItineraries.clear();
     }
 
-    public void addItinerary(ItineraryItemRequest item) {
-        TemplateItinerary itinerary = TemplateItinerary.builder()
-                .template(this)
-                .day(item.day())
-                .location(item.location())
-                .content(item.content())
-                .startTime(item.startTime())
-                .latitude(item.latitude())
-                .longitude(item.longitude())
-                .build();
+    public void addItinerary(TemplateItinerary itinerary) {
         this.templateItineraries.add(itinerary);
+    }
+
+    // 태그를 tags로 바꾼다. 남는 태그는 그대로 두고, 빠진 태그는 컬렉션에서 빼고(orphanRemoval로 삭제), 새 태그만 추가한다
+    public void replaceTags(List<Tag> tags) {
+        Set<Long> newTagIds = tags.stream().map(Tag::getId).collect(Collectors.toSet());
+        this.templateTags.removeIf(templateTag -> !newTagIds.contains(templateTag.getTag().getId()));
+
+        Set<Long> keptTagIds = this.templateTags.stream()
+                .map(templateTag -> templateTag.getTag().getId())
+                .collect(Collectors.toSet());
+        tags.stream()
+                .filter(tag -> !keptTagIds.contains(tag.getId()))
+                .forEach(tag -> this.templateTags.add(TemplateTag.builder().template(this).tag(tag).build()));
+    }
+
+    // 지역을 regions로 바꾼다. 방식은 replaceTags와 같다
+    public void replaceRegions(List<Region> regions) {
+        Set<Long> newRegionIds = regions.stream().map(Region::getId).collect(Collectors.toSet());
+        this.templateRegions.removeIf(templateRegion -> !newRegionIds.contains(templateRegion.getRegion().getId()));
+
+        Set<Long> keptRegionIds = this.templateRegions.stream()
+                .map(templateRegion -> templateRegion.getRegion().getId())
+                .collect(Collectors.toSet());
+        regions.stream()
+                .filter(region -> !keptRegionIds.contains(region.getId()))
+                .forEach(region -> this.templateRegions.add(TemplateRegion.builder().template(this).region(region).build()));
     }
 }
