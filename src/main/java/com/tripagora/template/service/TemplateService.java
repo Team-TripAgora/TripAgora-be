@@ -5,18 +5,14 @@ import com.tripagora.common.image.service.ImageService;
 import com.tripagora.guideprofile.entity.GuideProfile;
 import com.tripagora.guideprofile.exception.GuideProfileNotFoundException;
 import com.tripagora.region.entity.Region;
-import com.tripagora.region.entity.TemplateRegion;
 import com.tripagora.region.exception.InvalidRegionSelectionException;
 import com.tripagora.region.exception.RegionHierarchyConflictException;
 import com.tripagora.region.repository.RegionRepository;
-import com.tripagora.region.repository.TemplateRegionRepository;
 import com.tripagora.trip.repository.TripRepository;
 import com.tripagora.tag.entity.Tag;
-import com.tripagora.tag.entity.TemplateTag;
 import com.tripagora.tag.exception.InvalidTagSelectionException;
 import com.tripagora.tag.exception.MaximumTagsExceededException;
 import com.tripagora.tag.repository.TagRepository;
-import com.tripagora.tag.repository.TemplateTagRepository;
 import com.tripagora.template.dto.request.*;
 import com.tripagora.template.dto.response.*;
 import com.tripagora.template.entity.Template;
@@ -48,8 +44,6 @@ public class TemplateService {
     private final UserRepository userRepository;
     private final TagRepository tagRepository;
     private final RegionRepository regionRepository;
-    private final TemplateTagRepository templateTagRepository;
-    private final TemplateRegionRepository templateRegionRepository;
     private final TripRepository tripRepository;
 
     @Transactional
@@ -197,14 +191,7 @@ public class TemplateService {
             throw new InvalidTagSelectionException();
         }
 
-        templateTagRepository.deleteByTemplate(template);
-        List<TemplateTag> newUserTags = newTags.stream()
-                .map(tag -> TemplateTag.builder()
-                        .template(template)
-                        .tag(tag)
-                        .build())
-                .toList();
-        templateTagRepository.saveAll(newUserTags);
+        template.replaceTags(newTags);
 
         List<Long> newTagIds = newTags.stream()
                 .map(Tag::getId)
@@ -231,14 +218,7 @@ public class TemplateService {
             }
         }
 
-        templateRegionRepository.deleteByTemplate(template);
-        List<TemplateRegion> newTemplateRegions = newRegions.stream()
-                .map(region -> TemplateRegion.builder()
-                        .template(template)
-                        .region(region)
-                        .build())
-                .toList();
-        templateRegionRepository.saveAll(newTemplateRegions);
+        template.replaceRegions(newRegions);
 
         List<Long> newRegionIds = newRegions.stream()
                 .map(Region::getId)

@@ -4,6 +4,7 @@ import com.tripagora.common.entity.BaseEntity;
 import com.tripagora.guideprofile.entity.GuideProfile;
 import com.tripagora.participation.entity.Participation;
 import com.tripagora.review.entity.Review;
+import com.tripagora.tag.entity.Tag;
 import com.tripagora.tag.entity.UserTag;
 import com.tripagora.wishlist.entity.Wishlist;
 import jakarta.persistence.*;
@@ -14,6 +15,8 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -82,6 +85,19 @@ public class User extends BaseEntity {
 
     public void updateImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    // 관심 태그를 tags로 바꾼다. 남는 태그는 그대로 두고, 빠진 태그는 컬렉션에서 빼고(orphanRemoval로 삭제), 새 태그만 추가한다
+    public void replaceTags(List<Tag> tags) {
+        Set<Long> newTagIds = tags.stream().map(Tag::getId).collect(Collectors.toSet());
+        this.userTags.removeIf(userTag -> !newTagIds.contains(userTag.getTag().getId()));
+
+        Set<Long> keptTagIds = this.userTags.stream()
+                .map(userTag -> userTag.getTag().getId())
+                .collect(Collectors.toSet());
+        tags.stream()
+                .filter(tag -> !keptTagIds.contains(tag.getId()))
+                .forEach(tag -> this.userTags.add(UserTag.builder().user(this).tag(tag).build()));
     }
 
     public void updateFcmToken(String fcmToken) {

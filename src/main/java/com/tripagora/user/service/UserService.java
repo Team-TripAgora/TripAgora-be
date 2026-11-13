@@ -3,11 +3,9 @@ package com.tripagora.user.service;
 import com.tripagora.auth.repository.RefreshTokenRepository;
 import com.tripagora.common.image.service.ImageService;
 import com.tripagora.tag.entity.Tag;
-import com.tripagora.tag.entity.UserTag;
 import com.tripagora.tag.exception.InvalidTagSelectionException;
 import com.tripagora.tag.exception.MinimumTagsRequiredException;
 import com.tripagora.tag.repository.TagRepository;
-import com.tripagora.tag.repository.UserTagRepository;
 import com.tripagora.user.dto.request.NicknameUpdateRequest;
 import com.tripagora.user.dto.response.NicknameUpdateResponse;
 import com.tripagora.user.dto.request.UserTagUpdateRequest;
@@ -35,7 +33,6 @@ public class UserService {
     private final ImageService imageService;
     private final UserRepository userRepository;
     private final TagRepository tagRepository;
-    private final UserTagRepository userTagRepository;
     private final RefreshTokenRepository refreshTokenRepository;
 
     @Transactional(readOnly = true)
@@ -100,14 +97,7 @@ public class UserService {
 
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
-        userTagRepository.deleteByUser(user);
-        List<UserTag> newUserTags = newTags.stream()
-                .map(tag -> UserTag.builder()
-                        .user(user)
-                        .tag(tag)
-                        .build())
-                .toList();
-        userTagRepository.saveAll(newUserTags);
+        user.replaceTags(newTags);
 
         List<Long> newTagIds = newTags.stream()
                 .map(Tag::getId)
