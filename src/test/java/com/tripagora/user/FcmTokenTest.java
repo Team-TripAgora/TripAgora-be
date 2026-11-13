@@ -43,6 +43,17 @@ class FcmTokenTest extends IntegrationTest {
                 .andExpect(jsonPath("$.errors[0].reason").value("FCM 토큰은 필수입니다"));
     }
 
+    @Test
+    @DisplayName("로그아웃하면 FCM 토큰이 지워진다 (로그아웃한 기기로 SOS가 가지 않는다)")
+    void clearsTokenOnLogout() throws Exception {
+        registerToken(USER_A, "token-a").andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/auth/logout").header("Authorization", bearer(USER_A, Role.TRAVELER)))
+                .andExpect(status().isOk());
+
+        assertThat(savedToken(USER_A)).isNull();
+    }
+
     private ResultActions registerToken(long userId, String token) throws Exception {
         return mockMvc.perform(post("/api/users/me/fcm-token")
                 .header("Authorization", bearer(userId, Role.TRAVELER))
