@@ -2,3 +2,7 @@ spring:
   profiles:
     active:
       - main
+
+  # 영속성 컨텍스트를 서비스 트랜잭션 안에서만 연다 (컨트롤러·응답 변환에서 지연 로딩 금지)
+  jpa:
+    open-in-view: false
