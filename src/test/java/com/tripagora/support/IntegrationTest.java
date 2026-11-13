@@ -1,5 +1,6 @@
 package com.tripagora.support;
 
+import com.amazonaws.services.s3.AmazonS3;
 import com.google.firebase.FirebaseApp;
 import com.tripagora.auth.util.JWTUtil;
 import com.tripagora.common.service.FcmService;
@@ -25,6 +26,10 @@ public abstract class IntegrationTest {
     // 실제 FCM 전송을 하지 않는다
     @MockitoBean
     protected FcmService fcmService;
+
+    // 실제 S3에 올리거나 지우지 않는다
+    @MockitoBean
+    protected AmazonS3 amazonS3;
 
     @Autowired
     protected MockMvc mockMvc;
