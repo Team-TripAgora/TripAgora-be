@@ -15,7 +15,6 @@ spring:
       max-request-size: 100MB
 
   jpa:
-    database: mysql
     generate-ddl: true
     hibernate:
       ddl-auto: update
