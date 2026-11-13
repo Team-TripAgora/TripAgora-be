@@ -19,8 +19,6 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URLConnection;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -158,16 +156,19 @@ public class ImageService {
         return EXTENSION.matcher(subtype).matches() ? subtype : null;
     }
 
+    // S3 이미지 주소(https://{버킷}.s3.{리전}.amazonaws.com/images/...)를 파싱해 파일 키를 꺼낸다.
+    // 호스트가 이 버킷이고 경로가 images/ 아래일 때만 받는다. 경로는 %인코딩이 풀린 값이고 쿼리는 포함하지 않는다
     private String extractFileNameFromUrl(String imageUrl) {
         try {
-            String bucketUrl = "https://" + bucketName + ".s3.";
-            int startIndex = imageUrl.indexOf(bucketUrl);
-            if (startIndex == -1) {
+            URI uri = URI.create(imageUrl);
+            String host = uri.getHost();
+            String path = uri.getPath();
+            if (!"https".equals(uri.getScheme()) || host == null || !host.startsWith(bucketName + ".s3.")
+                    || path == null || !path.startsWith("/" + FOLDER_NAME)) {
                 throw new InvalidImageUrlFormatException();
             }
-            String path = imageUrl.substring(imageUrl.indexOf(FOLDER_NAME));
-            return URLDecoder.decode(path, StandardCharsets.UTF_8);
-        } catch (Exception e) {
+            return path.substring(1);
+        } catch (IllegalArgumentException e) {
             throw new InvalidImageUrlFormatException();
         }
     }

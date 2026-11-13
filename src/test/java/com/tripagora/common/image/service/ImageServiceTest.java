@@ -4,6 +4,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
+import com.tripagora.common.image.exception.ImageDeletionFailedException;
 import com.tripagora.common.image.exception.ImageUploadFailedException;
 import com.tripagora.common.image.exception.UnSupportedImageFormatException;
 import org.junit.jupiter.api.AfterEach;
@@ -27,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -130,6 +132,33 @@ class ImageServiceTest {
 
         assertThat(Duration.between(start, Instant.now())).isLessThan(Duration.ofSeconds(7));
         verify(amazonS3, never()).putObject(any(PutObjectRequest.class));
+    }
+
+    @Test
+    @DisplayName("S3 이미지 주소에서 파일 키를 꺼내 지운다")
+    void deletesByKeyFromS3Url() {
+        imageService.deleteImage("https://" + BUCKET + ".s3.ap-northeast-2.amazonaws.com/images/abc.jpg");
+
+        verify(amazonS3).deleteObject(BUCKET, "images/abc.jpg");
+    }
+
+    @Test
+    @DisplayName("주소 뒤에 쿼리가 붙어 있어도 파일 키만 꺼낸다")
+    void ignoresQueryString() {
+        imageService.deleteImage("https://" + BUCKET + ".s3.ap-northeast-2.amazonaws.com/images/abc.jpg?versionId=1");
+
+        verify(amazonS3).deleteObject(BUCKET, "images/abc.jpg");
+    }
+
+    @Test
+    @DisplayName("버킷 주소가 아닌 URL은 지우지 않는다 (쿼리 안에 버킷 주소가 들어 있어도)")
+    void rejectsUrlOfOtherHost() {
+        String otherHostUrl = "https://example.com/go?to=https://" + BUCKET + ".s3.ap-northeast-2.amazonaws.com/images/abc.jpg";
+
+        assertThatThrownBy(() -> imageService.deleteImage(otherHostUrl))
+                .isInstanceOf(ImageDeletionFailedException.class);
+
+        verify(amazonS3, never()).deleteObject(anyString(), argThat(key -> true));
     }
 
     private String serverUrl(String path) {
