@@ -67,4 +67,32 @@ public class TestFixture {
     public void tag(long id, String name) {
         jdbcTemplate.update("INSERT INTO tag (id, name) VALUES (?, ?)", id, name);
     }
+
+    public void templateImage(long templateId, int displayOrder) {
+        jdbcTemplate.update("INSERT INTO template_image (created_at, modified_at, display_order, image_url, template_id) " +
+                "VALUES (NOW(6), NOW(6), ?, ?, ?)", displayOrder, "https://example.com/template" + templateId + "-" + displayOrder + ".png", templateId);
+    }
+
+    public void templateRegion(long templateId, long regionId) {
+        jdbcTemplate.update("INSERT INTO template_region (template_id, region_id) VALUES (?, ?)", templateId, regionId);
+    }
+
+    public void templateTag(long templateId, long tagId) {
+        jdbcTemplate.update("INSERT INTO template_tag (template_id, tag_id) VALUES (?, ?)", templateId, tagId);
+    }
+
+    public void wishlist(long userId, long tripId) {
+        jdbcTemplate.update("INSERT INTO wishlist (created_at, modified_at, user_id, trip_id) VALUES (NOW(6), NOW(6), ?, ?)", userId, tripId);
+    }
+
+    // sender_role은 지금 ORDINAL로 저장된다 (D-14)
+    public void chatMessage(long roomId, long senderId, Role senderRole) {
+        jdbcTemplate.update("INSERT INTO chat_message (created_at, modified_at, content, sender_role, room_id, sender_id) " +
+                "VALUES (NOW(6), NOW(6), '안녕하세요', ?, ?, ?)", senderRole.ordinal(), roomId, senderId);
+    }
+
+    public void userLocation(long userId, long roomId) {
+        jdbcTemplate.update("INSERT INTO user_location (created_at, modified_at, latitude, longitude, user_id, room_id) " +
+                "VALUES (NOW(6), NOW(6), 37.5, 127.0, ?, ?)", userId, roomId);
+    }
 }
