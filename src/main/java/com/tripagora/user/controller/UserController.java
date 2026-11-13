@@ -3,6 +3,7 @@ package com.tripagora.user.controller;
 import com.tripagora.common.code.SuccessCode;
 import com.tripagora.common.response.ApiResponse;
 import com.tripagora.guideprofile.service.GuideProfileService;
+import com.tripagora.user.dto.request.FcmTokenRequest;
 import com.tripagora.user.dto.request.NicknameUpdateRequest;
 import com.tripagora.user.dto.request.UserTagUpdateRequest;
 import com.tripagora.user.dto.response.*;
@@ -45,6 +46,14 @@ public class UserController {
                                                          @RequestBody @Valid final UserTagUpdateRequest request) {
         UserTagUpdateResponse response = userService.updateTags(userId, request);
         return ApiResponse.success(SuccessCode.OK, response);
+    }
+
+    // SOS 알림을 받을 기기의 FCM 토큰 등록 (앱이 로그인할 때 호출)
+    @PostMapping("/me/fcm-token")
+    public ApiResponse<Void> updateFcmToken(@AuthenticationPrincipal final long userId,
+                                            @RequestBody @Valid final FcmTokenRequest request) {
+        userService.updateFcmToken(userId, request.token());
+        return ApiResponse.success(SuccessCode.OK);
     }
 
     @PatchMapping(value = "/me/profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

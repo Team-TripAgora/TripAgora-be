@@ -51,6 +51,12 @@ public class UserService {
     }
 
     @Transactional
+    public void updateFcmToken(long userId, String token) {
+        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        user.updateFcmToken(token);
+    }
+
+    @Transactional
     public void withdrawUser(long userId) {
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
         refreshTokenRepository.deleteByUserId(userId);
