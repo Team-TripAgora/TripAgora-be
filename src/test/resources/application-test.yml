@@ -1,0 +1,30 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        generate_statistics: true
+
+logging:
+  level:
+    # 통계를 켜면 세션마다 남는 요약 로그를 끈다
+    org.hibernate.engine.internal.StatisticalLoggingSessionEventListener: WARN
+
+# 아래 값은 테스트 전용 더미 값이다 (실제 키 아님)
+cloud:
+  aws:
+    credentials:
+      access-key: test-access-key
+      secret-key: test-secret-key
+    s3:
+      bucket: test-bucket
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+
+jwt:
+  secretKey: tripagora-test-only-jwt-secret-key-0123456789abcdef
+  access-token-expiration: 60
+  refresh-token-expiration: 1440

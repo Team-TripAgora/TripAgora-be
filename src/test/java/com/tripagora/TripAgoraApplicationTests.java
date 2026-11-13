@@ -1,9 +1,9 @@
 package com.tripagora;
 
+import com.tripagora.support.IntegrationTest;
 import org.junit.jupiter.api.Test;
 
-//@SpringBootTest
-class TripAgoraApplicationTests {
+class TripAgoraApplicationTests extends IntegrationTest {
 
 	@Test
 	void contextLoads() {

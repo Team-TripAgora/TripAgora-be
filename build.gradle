@@ -4,6 +4,9 @@ plugins {
 	id 'io.spring.dependency-management' version '1.1.7'
 }
 
+// 최신 Docker 엔진과 호환되는 버전 (Spring Boot 3.5.4 기본값 1.21.3은 Docker 연결에 실패)
+ext['testcontainers.version'] = '1.21.4'
+
 group = 'com.tripagora'
 version = '0.0.1-SNAPSHOT'
 
@@ -44,6 +47,11 @@ dependencies {
 
     // firebase
     implementation 'com.google.firebase:firebase-admin:9.2.0'
+
+    // test (Testcontainers MySQL)
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:mysql'
 
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.mysql:mysql-connector-j'
