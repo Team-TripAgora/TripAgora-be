@@ -82,6 +82,27 @@ class TemplateUpdateValidationTest extends IntegrationTest {
                 .andExpect(jsonPath("$.errors[0].reason").value("내용은 255자 이하여야 합니다."));
     }
 
+    @Test
+    @DisplayName("일정 장소 255자는 저장된다")
+    void acceptsItineraryLocationOf255Characters() throws Exception {
+        send(put("/api/templates/1/itineraries"), itinerariesWithLocation("a".repeat(255)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("일정 장소가 255자를 넘으면 400")
+    void rejectsItineraryLocationOver255Characters() throws Exception {
+        send(put("/api/templates/1/itineraries"), itinerariesWithLocation("a".repeat(256)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].field").value("itineraries[0].location"))
+                .andExpect(jsonPath("$.errors[0].reason").value("일정 장소는 255자 이하여야 합니다."));
+    }
+
+    private String itinerariesWithLocation(String location) {
+        return "{\"itineraries\":[{\"day\":1,\"location\":\"" + location + "\",\"content\":\"내용\","
+                + "\"startTime\":\"10:00:00\",\"latitude\":37.5,\"longitude\":127.0}]}";
+    }
+
     private ResultActions send(MockHttpServletRequestBuilder request, String body) throws Exception {
         return mockMvc.perform(request
                 .header("Authorization", bearer(GUIDE, Role.GUIDE))
