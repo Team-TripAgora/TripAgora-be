@@ -5,7 +5,6 @@ import com.tripagora.participation.entity.Participation;
 import com.tripagora.review.entity.Review;
 import com.tripagora.room.entity.Room;
 import com.tripagora.trip.exception.TripFullException;
-import com.tripagora.template.dto.request.ItineraryItemRequest;
 import com.tripagora.template.entity.Template;
 import com.tripagora.template.entity.TemplateItinerary;
 import com.tripagora.wishlist.entity.Wishlist;
@@ -98,19 +97,6 @@ public class Trip extends BaseEntity {
 
     public void clearItineraries() {
         this.tripItineraries.clear();
-    }
-
-    public void addItinerary(ItineraryItemRequest item) {
-         TripItinerary itinerary = TripItinerary.builder()
-                .trip(this)
-                .day(item.day())
-                .location(item.location())
-                .content(item.content())
-                .startTime(item.startTime())
-                .latitude(item.latitude())
-                .longitude(item.longitude())
-                .build();
-        this.tripItineraries.add(itinerary);
     }
 
     public void increaseParticipant() {

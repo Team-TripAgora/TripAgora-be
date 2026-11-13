@@ -263,7 +263,7 @@ public class TemplateService {
         }
 
         template.clearItineraries();
-        request.itineraries().forEach(template::addItinerary);
+        request.itineraries().forEach(item -> template.addItinerary(item.toTemplateItinerary(template)));
     }
 
     @Transactional

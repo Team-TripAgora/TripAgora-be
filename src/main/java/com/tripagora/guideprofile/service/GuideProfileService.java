@@ -6,6 +6,7 @@ import com.tripagora.common.image.service.ImageService;
 import com.tripagora.guideprofile.dto.request.GuideBioUpdateRequest;
 import com.tripagora.guideprofile.dto.request.GuidePortfolioUpdateRequest;
 import com.tripagora.guideprofile.dto.response.*;
+import com.tripagora.guideprofile.entity.GuidePortfolio;
 import com.tripagora.guideprofile.entity.GuideProfile;
 import com.tripagora.guideprofile.exception.AlreadyGuideException;
 import com.tripagora.guideprofile.exception.AlreadyTravelerException;
@@ -146,7 +147,11 @@ public class GuideProfileService {
     @Transactional
     public GuidePortfolioUpdateResponse updateMyPortfolios(Long userId, GuidePortfolioUpdateRequest request) {
         GuideProfile guideProfile = guideProfileRepository.findByUser_Id(userId).orElseThrow(GuideProfileNotFoundException::new);
-        guideProfile.updatePortfolios(request.portfolios());
+        List<GuidePortfolio> portfolios = request.portfolios() == null ? List.of()
+                : request.portfolios().stream()
+                        .map(item -> item.toGuidePortfolio(guideProfile))
+                        .toList();
+        guideProfile.updatePortfolios(portfolios);
 
         List<PortfolioResponse> portfolioResponses = guideProfile.getPortfolios().stream()
                 .map(p -> new PortfolioResponse(p.getType().name(), p.getUrl()))

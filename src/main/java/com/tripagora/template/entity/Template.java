@@ -6,7 +6,6 @@ import com.tripagora.region.entity.TemplateRegion;
 import com.tripagora.review.entity.Review;
 import com.tripagora.trip.entity.Trip;
 import com.tripagora.tag.entity.TemplateTag;
-import com.tripagora.template.dto.request.ItineraryItemRequest;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -98,16 +97,7 @@ public class Template extends BaseEntity {
         this.templateItineraries.clear();
     }
 
-    public void addItinerary(ItineraryItemRequest item) {
-        TemplateItinerary itinerary = TemplateItinerary.builder()
-                .template(this)
-                .day(item.day())
-                .location(item.location())
-                .content(item.content())
-                .startTime(item.startTime())
-                .latitude(item.latitude())
-                .longitude(item.longitude())
-                .build();
+    public void addItinerary(TemplateItinerary itinerary) {
         this.templateItineraries.add(itinerary);
     }
 }

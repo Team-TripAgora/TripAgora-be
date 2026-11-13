@@ -1,5 +1,9 @@
 package com.tripagora.template.dto.request;
 
+import com.tripagora.template.entity.Template;
+import com.tripagora.template.entity.TemplateItinerary;
+import com.tripagora.trip.entity.Trip;
+import com.tripagora.trip.entity.TripItinerary;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -23,4 +27,29 @@ public record ItineraryItemRequest(
         Double latitude,
 
         @NotNull(message = "경도는 필수입니다.")
-        Double longitude) {}
+        Double longitude) {
+
+    public TemplateItinerary toTemplateItinerary(Template template) {
+        return TemplateItinerary.builder()
+                .template(template)
+                .day(day)
+                .location(location)
+                .content(content)
+                .startTime(startTime)
+                .latitude(latitude)
+                .longitude(longitude)
+                .build();
+    }
+
+    public TripItinerary toTripItinerary(Trip trip) {
+        return TripItinerary.builder()
+                .trip(trip)
+                .day(day)
+                .location(location)
+                .content(content)
+                .startTime(startTime)
+                .latitude(latitude)
+                .longitude(longitude)
+                .build();
+    }
+}
