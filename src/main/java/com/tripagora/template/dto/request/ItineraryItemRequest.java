@@ -2,6 +2,7 @@ package com.tripagora.template.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalTime;
 
@@ -10,6 +11,7 @@ public record ItineraryItemRequest(
         Integer day,
 
         @NotBlank(message = "일정 장소는 공백일 수 없습니다.")
+        @Size(max = 255, message = "일정 장소는 255자 이하여야 합니다.")
         String location,
 
         String content,
