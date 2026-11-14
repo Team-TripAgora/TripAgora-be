@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URLConnection;
+import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -97,23 +98,6 @@ public class ImageService {
         }
     }
 
-    public String updateImage(String oldImageUrl, MultipartFile newFile) {
-        // 새 이미지 업로드
-        String newImageUrl = uploadImage(newFile);
-
-        // 기존 이미지가 있다면 삭제
-        if (StringUtils.hasText(oldImageUrl)) {
-            try {
-                deleteImage(oldImageUrl);
-            } catch (Exception e) {
-                // 기존 이미지 삭제 실패는 로깅만 하고, 새 이미지 URL은 그대로 반환
-                log.warn("기존 이미지 삭제 실패: [URL: {}], [Error: {}]", oldImageUrl, e.getMessage());
-            }
-        }
-
-        return newImageUrl;
-    }
-
     public void deleteImage(String imageUrl) {
         if (!StringUtils.hasText(imageUrl)) {
             return; // URL이 없으면 삭제 로직을 실행하지 않음
@@ -123,6 +107,17 @@ public class ImageService {
             amazonS3.deleteObject(bucketName, fileName);
         } catch (Exception e) {
             throw new ImageDeletionFailedException();
+        }
+    }
+
+    // 여러 파일을 지운다. 하나가 실패해도 나머지를 지우고, 실패는 로그만 남긴다 (파일이 남을 뿐 깨진 이미지는 생기지 않는다)
+    public void deleteImagesQuietly(List<String> imageUrls) {
+        for (String imageUrl : imageUrls) {
+            try {
+                deleteImage(imageUrl);
+            } catch (RuntimeException e) {
+                log.warn("S3 이미지 삭제 실패, 파일이 남는다: {}", imageUrl, e);
+            }
         }
     }
 

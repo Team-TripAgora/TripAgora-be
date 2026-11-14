@@ -1,6 +1,7 @@
 package com.tripagora.template.service;
 
 import com.tripagora.auth.exception.AccessDeniedException;
+import com.tripagora.common.image.event.ImageDeletionEvent;
 import com.tripagora.common.image.service.ImageService;
 import com.tripagora.guideprofile.entity.GuideProfile;
 import com.tripagora.guideprofile.exception.GuideProfileNotFoundException;
@@ -25,10 +26,12 @@ import com.tripagora.user.entity.User;
 import com.tripagora.user.exception.UserNotFoundException;
 import com.tripagora.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
@@ -45,6 +48,8 @@ public class TemplateService {
     private final TagRepository tagRepository;
     private final RegionRepository regionRepository;
     private final TripRepository tripRepository;
+    private final TransactionTemplate transactionTemplate;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public TemplateCreateResponse createDraftTemplate(long userId) {
@@ -155,24 +160,50 @@ public class TemplateService {
         return new TemplateContentUpdateResponse(template.getContent());
     }
 
-    @Transactional
+    // S3 업로드 동안 DB 트랜잭션을 열어 두지 않는다: 권한 확인(짧은 트랜잭션) → 새 파일 업로드(트랜잭션 밖) → DB 교체(짧은 트랜잭션).
+    // 원본 파일은 DB가 커밋된 뒤에만 지우고, DB 교체가 실패하면 방금 올린 파일을 지운다
     public TemplateImageUpdateResponse updateImages(long userId, long templateId, List<MultipartFile> images) {
-        Template template = findTemplateAndVerifyOwner(userId, templateId);
-        verifyNoActiveTrips(templateId);
+        transactionTemplate.executeWithoutResult(status -> {
+            findTemplateAndVerifyOwner(userId, templateId);
+            verifyNoActiveTrips(templateId);
+        });
 
-        template.getTemplateImages().forEach(image -> imageService.deleteImage(image.getImageUrl()));
-        template.clearImages();
-
-        List<String> newImageUrls = new ArrayList<>();
-        if (images != null && !images.isEmpty()) {
-            images.forEach(image -> {
-                String imageUrl = imageService.uploadImage(image);
-                template.addImage(imageUrl);
-                newImageUrls.add(imageUrl);
-            });
+        List<String> newImageUrls = uploadImages(images);
+        try {
+            transactionTemplate.executeWithoutResult(status -> replaceImages(userId, templateId, newImageUrls));
+        } catch (RuntimeException e) {
+            imageService.deleteImagesQuietly(newImageUrls);
+            throw e;
         }
 
         return new TemplateImageUpdateResponse(newImageUrls);
+    }
+
+    private List<String> uploadImages(List<MultipartFile> images) {
+        List<String> uploadedImageUrls = new ArrayList<>();
+        if (images == null) {
+            return uploadedImageUrls;
+        }
+        try {
+            images.forEach(image -> uploadedImageUrls.add(imageService.uploadImage(image)));
+        } catch (RuntimeException e) {
+            imageService.deleteImagesQuietly(uploadedImageUrls);
+            throw e;
+        }
+        return uploadedImageUrls;
+    }
+
+    private void replaceImages(long userId, long templateId, List<String> newImageUrls) {
+        Template template = findTemplateAndVerifyOwner(userId, templateId);
+        verifyNoActiveTrips(templateId);
+
+        List<String> oldImageUrls = template.getTemplateImages().stream()
+                .map(TemplateImage::getImageUrl)
+                .toList();
+        template.clearImages();
+        newImageUrls.forEach(template::addImage);
+
+        eventPublisher.publishEvent(new ImageDeletionEvent(oldImageUrls));
     }
 
     @Transactional
@@ -254,7 +285,11 @@ public class TemplateService {
             throw new TemplateHasActiveTripsException();
         }
 
+        List<String> imageUrls = template.getTemplateImages().stream()
+                .map(TemplateImage::getImageUrl)
+                .toList();
         templateRepository.delete(template);
+        eventPublisher.publishEvent(new ImageDeletionEvent(imageUrls));
     }
 
     public Template findTemplateAndVerifyOwner(long userId, long templateId) {
