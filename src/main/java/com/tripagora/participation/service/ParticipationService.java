@@ -1,5 +1,6 @@
 package com.tripagora.participation.service;
 
+import com.tripagora.common.exception.UniqueConstraints;
 import com.tripagora.participation.dto.response.ParticipationResponse;
 import com.tripagora.participation.entity.Participation;
 import com.tripagora.participation.exception.*;
@@ -13,6 +14,7 @@ import com.tripagora.user.entity.User;
 import com.tripagora.user.exception.UserNotFoundException;
 import com.tripagora.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,7 +59,15 @@ public class ParticipationService {
                 .role(Role.TRAVELER)
                 .build();
 
-        participationRepository.save(participation);
+        try {
+            participationRepository.save(participation);
+        } catch (DataIntegrityViolationException e) {
+            // 같은 사용자의 같은 여행 신청이 동시에 들어와 먼저 저장된 것이 있으면
+            if (UniqueConstraints.isViolated(e, Participation.UNIQUE_USER_TRIP)) {
+                throw new AlreadyParticipatingException();
+            }
+            throw e;
+        }
         trip.addParticipation(participation);
 
         return new ParticipationResponse(

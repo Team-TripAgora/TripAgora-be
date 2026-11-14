@@ -1,5 +1,6 @@
 package com.tripagora.wishlist.service;
 
+import com.tripagora.common.exception.UniqueConstraints;
 import com.tripagora.trip.dto.response.TripListResponse;
 import com.tripagora.trip.entity.Trip;
 import com.tripagora.trip.exception.TripNotFoundException;
@@ -13,6 +14,7 @@ import com.tripagora.wishlist.exception.AlreadyInWishlistException;
 import com.tripagora.wishlist.exception.WishlistNotFoundException;
 import com.tripagora.wishlist.repository.WishlistRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -39,7 +41,15 @@ public class WishlistService {
                 .trip(trip)
                 .build();
 
-        wishlistRepository.save(wishlist);
+        try {
+            wishlistRepository.save(wishlist);
+        } catch (DataIntegrityViolationException e) {
+            // 같은 찜 요청이 동시에 들어와 먼저 저장된 것이 있으면
+            if (UniqueConstraints.isViolated(e, Wishlist.UNIQUE_USER_TRIP)) {
+                throw new AlreadyInWishlistException();
+            }
+            throw e;
+        }
     }
 
     @Transactional

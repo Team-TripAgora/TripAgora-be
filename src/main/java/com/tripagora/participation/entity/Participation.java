@@ -16,8 +16,12 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "participation")
+@Table(name = "participation",
+        uniqueConstraints = @UniqueConstraint(name = Participation.UNIQUE_USER_TRIP, columnNames = {"user_id", "trip_id"}))
 public class Participation extends BaseEntity {
+    // 한 사용자는 한 여행에 한 번만 참가한다
+    public static final String UNIQUE_USER_TRIP = "uk_participation_user_trip";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
