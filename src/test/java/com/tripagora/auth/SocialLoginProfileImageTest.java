@@ -3,7 +3,9 @@ package com.tripagora.auth;
 import com.sun.net.httpserver.HttpServer;
 import com.tripagora.auth.service.LoginService;
 import com.tripagora.support.IntegrationTest;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -51,22 +53,32 @@ class SocialLoginProfileImageTest extends IntegrationTest {
     private RestTemplate kakaoRestTemplate;
     private ClientHttpRequestFactory originalRequestFactory;
     private MockRestServiceServer kakao;
-    private HttpServer imageServer;
-    private ExecutorService imageServerThreads;
+    private static HttpServer imageServer;
+    private static ExecutorService imageServerThreads;
 
-    @BeforeEach
-    void setUp() throws IOException {
-        Object loginServiceTarget = AopTestUtils.getUltimateTargetObject(loginService);
-        kakaoRestTemplate = (RestTemplate) ReflectionTestUtils.getField(loginServiceTarget, "restTemplate");
-        originalRequestFactory = kakaoRestTemplate.getRequestFactory();
-        kakao = MockRestServiceServer.bindTo(kakaoRestTemplate).build();
-
+    // 로컬 HTTP 서버는 클래스마다 한 번만 띄운다 (테스트마다 포트를 새로 열면 Windows에서 가끔 소켓 오류가 난다)
+    @BeforeAll
+    static void startImageServer() throws IOException {
         imageServerThreads = Executors.newCachedThreadPool();
         imageServer = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
         imageServer.setExecutor(imageServerThreads);
         imageServer.createContext("/profile.png", exchange -> respond(exchange, "image/png", new byte[]{1, 2, 3}));
         imageServer.createContext("/not-image", exchange -> respond(exchange, "text/html", "<html></html>".getBytes()));
         imageServer.start();
+    }
+
+    @AfterAll
+    static void stopImageServer() {
+        imageServer.stop(0);
+        imageServerThreads.shutdownNow();
+    }
+
+    @BeforeEach
+    void setUp() {
+        Object loginServiceTarget = AopTestUtils.getUltimateTargetObject(loginService);
+        kakaoRestTemplate = (RestTemplate) ReflectionTestUtils.getField(loginServiceTarget, "restTemplate");
+        originalRequestFactory = kakaoRestTemplate.getRequestFactory();
+        kakao = MockRestServiceServer.bindTo(kakaoRestTemplate).build();
 
         when(amazonS3.getUrl(anyString(), anyString())).thenAnswer(invocation ->
                 new URL("https://test-bucket.s3.ap-northeast-2.amazonaws.com/" + invocation.getArgument(1)));
@@ -75,8 +87,6 @@ class SocialLoginProfileImageTest extends IntegrationTest {
     @AfterEach
     void tearDown() {
         kakaoRestTemplate.setRequestFactory(originalRequestFactory);
-        imageServer.stop(0);
-        imageServerThreads.shutdownNow();
     }
 
     @Test
