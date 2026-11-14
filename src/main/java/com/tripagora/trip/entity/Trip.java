@@ -1,6 +1,7 @@
 package com.tripagora.trip.entity;
 
 import com.tripagora.common.entity.BaseEntity;
+import com.tripagora.itinerary.entity.Itineraries;
 import com.tripagora.itinerary.entity.Itinerary;
 import com.tripagora.participation.entity.Participation;
 import com.tripagora.review.entity.Review;
@@ -72,14 +73,20 @@ public class Trip extends BaseEntity {
         this.status = TripStatus.RECRUITING;
     }
 
-    public void addItinerary(Itinerary itinerary) {
-        itinerary.assignTo(this);
-        this.itineraries.add(itinerary);
+    // 일정을 통째로 바꾼다 (일차 검사는 Itineraries를 만들 때 끝난다)
+    public void replaceItineraries(Itineraries itineraries) {
+        this.itineraries.clear();
+        itineraries.values().forEach(itinerary -> {
+            itinerary.assignTo(this);
+            this.itineraries.add(itinerary);
+        });
     }
 
     // 템플릿 일정을 복사해 이 여행의 일정으로 갖는다 (이후 템플릿 일정이 바뀌어도 영향 없음)
     public void copyItinerariesFrom(Template template) {
-        template.getItineraries().forEach(itinerary -> addItinerary(itinerary.copy()));
+        replaceItineraries(new Itineraries(template.getItineraries().stream()
+                .map(Itinerary::copy)
+                .toList()));
     }
 
     public void addParticipation(Participation participation) {
@@ -101,10 +108,6 @@ public class Trip extends BaseEntity {
         this.status = newStatus;
     }
 
-    public void clearItineraries() {
-        this.itineraries.clear();
-    }
-
     public void increaseParticipant() {
         if (this.currentParticipants >= this.maxParticipants) {
             throw new TripFullException();
@@ -120,11 +123,8 @@ public class Trip extends BaseEntity {
     }
 
     public static LocalDate calculateEndDate(Template template, LocalDate startDate) {
-        int maxDay = template.getItineraries().stream()
-                .mapToInt(Itinerary::getDay)
-                .max()
-                .orElse(1);  // 일정이 없으면 당일 여행으로 간주
+        int lastDay = new Itineraries(template.getItineraries()).lastDay();
 
-        return startDate.plusDays(maxDay - 1);
+        return startDate.plusDays(lastDay - 1);
     }
 }

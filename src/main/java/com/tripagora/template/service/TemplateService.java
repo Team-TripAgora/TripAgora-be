@@ -18,7 +18,6 @@ import com.tripagora.template.dto.request.*;
 import com.tripagora.template.dto.response.*;
 import com.tripagora.template.entity.Template;
 import com.tripagora.template.entity.TemplateImage;
-import com.tripagora.template.exception.ItineraryDaySequenceInvalidException;
 import com.tripagora.template.exception.TemplateHasActiveTripsException;
 import com.tripagora.template.exception.TemplateNotFoundException;
 import com.tripagora.template.repository.TemplateRepository;
@@ -36,7 +35,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -256,18 +254,7 @@ public class TemplateService {
         Template template = findTemplateAndVerifyOwner(userId, templateId);
         verifyNoActiveTrips(templateId);
 
-        Map<Integer, List<ItineraryItemRequest>> itinerariesByDay = request.itineraries().stream()
-                .collect(Collectors.groupingBy(ItineraryItemRequest::day));
-
-        int maxDay = itinerariesByDay.keySet().stream().max(Integer::compareTo).orElse(0);
-        for (int i = 1; i <= maxDay; i++) {
-            if (!itinerariesByDay.containsKey(i)) {
-                throw new ItineraryDaySequenceInvalidException();
-            }
-        }
-
-        template.clearItineraries();
-        request.itineraries().forEach(item -> template.addItinerary(item.toItinerary()));
+        template.replaceItineraries(request.toItineraries());
     }
 
     @Transactional

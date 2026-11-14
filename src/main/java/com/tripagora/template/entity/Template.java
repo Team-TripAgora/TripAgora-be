@@ -2,6 +2,7 @@ package com.tripagora.template.entity;
 
 import com.tripagora.common.entity.BaseEntity;
 import com.tripagora.guideprofile.entity.GuideProfile;
+import com.tripagora.itinerary.entity.Itineraries;
 import com.tripagora.itinerary.entity.Itinerary;
 import com.tripagora.region.entity.Region;
 import com.tripagora.region.entity.TemplateRegion;
@@ -99,13 +100,13 @@ public class Template extends BaseEntity {
         this.templateImages.add(templateImage);
     }
 
-    public void clearItineraries() {
+    // 일정을 통째로 바꾼다 (일차 검사는 Itineraries를 만들 때 끝난다)
+    public void replaceItineraries(Itineraries itineraries) {
         this.itineraries.clear();
-    }
-
-    public void addItinerary(Itinerary itinerary) {
-        itinerary.assignTo(this);
-        this.itineraries.add(itinerary);
+        itineraries.values().forEach(itinerary -> {
+            itinerary.assignTo(this);
+            this.itineraries.add(itinerary);
+        });
     }
 
     // 태그를 tags로 바꾼다. 남는 태그는 그대로 두고, 빠진 태그는 컬렉션에서 빼고(orphanRemoval로 삭제), 새 태그만 추가한다

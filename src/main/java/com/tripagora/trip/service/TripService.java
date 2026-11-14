@@ -18,12 +18,10 @@ import com.tripagora.trip.entity.Trip;
 import com.tripagora.trip.entity.TripStatus;
 import com.tripagora.trip.exception.*;
 import com.tripagora.trip.repository.TripRepository;
-import com.tripagora.template.dto.request.ItineraryItemRequest;
 import com.tripagora.template.dto.request.ItineraryUpdateRequest;
 import com.tripagora.template.dto.response.ItinerariesResponse;
 import com.tripagora.template.dto.response.ItineraryItemResponse;
 import com.tripagora.template.entity.Template;
-import com.tripagora.template.exception.ItineraryDaySequenceInvalidException;
 import com.tripagora.template.service.TemplateService;
 import com.tripagora.user.entity.Role;
 import com.tripagora.user.entity.User;
@@ -38,7 +36,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -349,18 +346,7 @@ public class TripService {
             throw new TripNotInProgressException();
         }
 
-        Map<Integer, List<ItineraryItemRequest>> itinerariesByDay = request.itineraries().stream()
-                .collect(Collectors.groupingBy(ItineraryItemRequest::day));
-
-        int maxDay = itinerariesByDay.keySet().stream().max(Integer::compareTo).orElse(0);
-        for (int i = 1; i <= maxDay; i++) {
-            if (!itinerariesByDay.containsKey(i)) {
-                throw new ItineraryDaySequenceInvalidException();
-            }
-        }
-
-        trip.clearItineraries();
-        request.itineraries().forEach(item -> trip.addItinerary(item.toItinerary()));
+        trip.replaceItineraries(request.toItineraries());
     }
 
     private Trip findTripAndVerifyOwner(long userId, long tripId) {
