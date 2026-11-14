@@ -164,10 +164,7 @@ public class TripService {
     @Transactional
     public void updateTrip(long userId, long tripId, TripUpdateRequest request) {
         Trip trip = findTripAndVerifyOwner(userId, tripId);
-
-        if (trip.getStatus() != TripStatus.RECRUITING) {
-            throw new TripNotRecruitingException();
-        }
+        trip.validateUpdatable();
 
         if (request.maxParticipants() < trip.getCurrentParticipants()) {
             throw new InvalidMaxParticipantsException();
@@ -195,10 +192,7 @@ public class TripService {
     @Transactional
     public void deleteTrip(long userId, long tripId) {
         Trip trip = findTripAndVerifyOwner(userId, tripId);
-
-        if (trip.getStatus() != TripStatus.RECRUITING) {
-            throw new TripDeleteNotAllowedException();
-        }
+        trip.validateDeletable();
 
         tripRepository.delete(trip);
     }
@@ -227,9 +221,9 @@ public class TripService {
 
         Slice<Participation> participationSlice;
         if (statuses == null || statuses.isEmpty()) {
-            participationSlice = participationRepository.findByUserAndRole(user, Role.TRAVELER, pageable);
+            participationSlice = participationRepository.findByUserAndRoleAndHiddenAtIsNull(user, Role.TRAVELER, pageable);
         } else {
-            participationSlice = participationRepository.findByUserAndRoleAndTrip_StatusIn(user, Role.TRAVELER, statuses, pageable);
+            participationSlice = participationRepository.findByUserAndRoleAndHiddenAtIsNullAndTrip_StatusIn(user, Role.TRAVELER, statuses, pageable);
         }
 
         Slice<Trip> tripSlice = participationSlice.map(Participation::getTrip);
@@ -241,7 +235,7 @@ public class TripService {
     public CompletedTripListResponse getCompletedTrips(long userId, Pageable pageable) {
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
-        Slice<Participation> participationSlice = participationRepository.findByUserAndRoleAndTrip_Status(
+        Slice<Participation> participationSlice = participationRepository.findByUserAndRoleAndHiddenAtIsNullAndTrip_Status(
                 user,
                 Role.TRAVELER,
                 TripStatus.COMPLETED,
@@ -300,23 +294,7 @@ public class TripService {
     @Transactional
     public void closeRecruitment(long userId, long tripId) {
         Trip trip = findTripAndVerifyOwner(userId, tripId);
-
-        LocalDate today = LocalDate.now();
-        if (trip.getEndDate().isBefore(today)) {
-            throw new TripAlreadyEndedException();
-        }
-
-        if (trip.getStatus() != TripStatus.RECRUITING) {
-            throw new TripNotRecruitingException();
-        }
-
-        TripStatus newStatus;
-        if (trip.getStartDate().isAfter(today)) {
-            newStatus = TripStatus.RECRUITMENT_CLOSED;
-        } else {
-            newStatus = TripStatus.IN_PROGRESS;
-        }
-        trip.updateStatus(newStatus);
+        trip.closeRecruitment(LocalDate.now());
 
         Room room = Room.builder()
                 .trip(trip)
@@ -342,10 +320,7 @@ public class TripService {
             throw new AccessDeniedException();
         }
 
-        if (trip.getStatus() != TripStatus.IN_PROGRESS) {
-            throw new TripNotInProgressException();
-        }
-
+        trip.validateItineraryEditable();
         trip.replaceItineraries(request.toItineraries());
     }
 

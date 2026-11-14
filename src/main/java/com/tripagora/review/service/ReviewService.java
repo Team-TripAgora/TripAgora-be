@@ -16,7 +16,6 @@ import com.tripagora.review.exception.ReviewNotFoundException;
 import com.tripagora.review.exception.TripNotCompletedException;
 import com.tripagora.review.repository.ReviewRepository;
 import com.tripagora.trip.entity.Trip;
-import com.tripagora.trip.entity.TripStatus;
 import com.tripagora.trip.exception.TripNotFoundException;
 import com.tripagora.trip.repository.TripRepository;
 import com.tripagora.template.entity.Template;
@@ -54,8 +53,8 @@ public class ReviewService {
 
         validateReviewer(author, trip);
 
-        if (trip.getStatus() != TripStatus.COMPLETED) {
-             throw new TripNotCompletedException();
+        if (!trip.isCompleted()) {
+            throw new TripNotCompletedException();
         }
 
         if (reviewRepository.existsByAuthor_IdAndTrip_Id(userId, request.tripId())) {

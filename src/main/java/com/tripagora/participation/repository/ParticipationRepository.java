@@ -22,20 +22,21 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
     boolean existsByUser_IdAndTrip_Id(long userId, long tripId);
     boolean existsByUser_IdAndTrip_StatusIn(long userId, List<TripStatus> statuses);
 
-    Slice<Participation> findByUserAndRoleAndTrip_Status(
+    // 내 여행 목록 3개: 숨긴 참가(완료 여행을 목록에서 지운 것)는 뺀다
+    Slice<Participation> findByUserAndRoleAndHiddenAtIsNullAndTrip_Status(
             User user,
             Role role,
             TripStatus tripStatus,
             Pageable pageable);
 
-    Slice<Participation> findByUserAndRoleAndTrip_StatusIn(
+    Slice<Participation> findByUserAndRoleAndHiddenAtIsNullAndTrip_StatusIn(
             User user,
             Role role,
             List<TripStatus> statuses,
             Pageable pageable
     );
 
-    Slice<Participation> findByUserAndRole(
+    Slice<Participation> findByUserAndRoleAndHiddenAtIsNull(
             User user,
             Role role,
             Pageable pageable

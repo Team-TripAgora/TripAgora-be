@@ -29,7 +29,7 @@ public class TripScheduler {
         );
 
         tripsToStart.forEach(trip -> {
-            trip.updateStatus(TripStatus.IN_PROGRESS);
+            trip.start();
             log.info(" - 여행 ID {} 상태 변경: IN_PROGRESS (시작일 도래)", trip.getId());
         });
 
@@ -48,7 +48,7 @@ public class TripScheduler {
         );
 
         tripsToComplete.forEach(trip -> {
-            trip.updateStatus(TripStatus.COMPLETED);
+            trip.complete();
             log.info(" - 여행 ID {} 상태 변경: COMPLETED (종료일 경과)", trip.getId());
         });
 
