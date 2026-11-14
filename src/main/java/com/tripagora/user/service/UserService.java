@@ -1,6 +1,7 @@
 package com.tripagora.user.service;
 
 import com.tripagora.auth.repository.RefreshTokenRepository;
+import com.tripagora.common.image.event.ImageDeletionEvent;
 import com.tripagora.common.image.service.ImageService;
 import com.tripagora.location.repository.UserLocationRepository;
 import com.tripagora.participation.repository.ParticipationRepository;
@@ -22,9 +23,11 @@ import com.tripagora.user.exception.UserNotFoundException;
 import com.tripagora.user.exception.WithdrawalNotAllowedException;
 import com.tripagora.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
@@ -47,6 +50,8 @@ public class UserService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final ParticipationRepository participationRepository;
     private final UserLocationRepository userLocationRepository;
+    private final TransactionTemplate transactionTemplate;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional(readOnly = true)
     public UserInfoResponse getUserInfo(long userId) {
@@ -136,14 +141,21 @@ public class UserService {
         return new UserTagUpdateResponse(newTagIds);
     }
 
-    @Transactional
+    // S3 업로드 동안 DB 트랜잭션을 열어 두지 않는다: 새 사진 업로드(트랜잭션 밖) → DB 저장(짧은 트랜잭션).
+    // 옛 사진은 DB가 커밋된 뒤에만 지우고, 저장이 실패하면 방금 올린 새 사진을 지운다
     public ProfileImageUpdateResponse updateProfileImage(long userId, MultipartFile imageFile) {
-        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
-
-        String oldImageUrl = user.getImageUrl();
-        String newImageUrl = imageService.updateImage(oldImageUrl, imageFile);
-
-        user.updateImageUrl(newImageUrl);
+        String newImageUrl = imageService.uploadImage(imageFile);
+        try {
+            transactionTemplate.executeWithoutResult(status -> {
+                User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+                String oldImageUrl = user.getImageUrl();
+                user.updateImageUrl(newImageUrl);
+                eventPublisher.publishEvent(ImageDeletionEvent.of(oldImageUrl));
+            });
+        } catch (RuntimeException e) {
+            imageService.deleteImagesQuietly(List.of(newImageUrl));
+            throw e;
+        }
 
         return new ProfileImageUpdateResponse(newImageUrl);
     }

@@ -98,23 +98,6 @@ public class ImageService {
         }
     }
 
-    public String updateImage(String oldImageUrl, MultipartFile newFile) {
-        // 새 이미지 업로드
-        String newImageUrl = uploadImage(newFile);
-
-        // 기존 이미지가 있다면 삭제
-        if (StringUtils.hasText(oldImageUrl)) {
-            try {
-                deleteImage(oldImageUrl);
-            } catch (Exception e) {
-                // 기존 이미지 삭제 실패는 로깅만 하고, 새 이미지 URL은 그대로 반환
-                log.warn("기존 이미지 삭제 실패: [URL: {}], [Error: {}]", oldImageUrl, e.getMessage());
-            }
-        }
-
-        return newImageUrl;
-    }
-
     public void deleteImage(String imageUrl) {
         if (!StringUtils.hasText(imageUrl)) {
             return; // URL이 없으면 삭제 로직을 실행하지 않음

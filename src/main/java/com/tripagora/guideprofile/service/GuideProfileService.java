@@ -2,6 +2,7 @@ package com.tripagora.guideprofile.service;
 
 import com.tripagora.auth.dto.ReissueResponse;
 import com.tripagora.auth.service.JWTService;
+import com.tripagora.common.image.event.ImageDeletionEvent;
 import com.tripagora.common.image.service.ImageService;
 import com.tripagora.guideprofile.dto.request.GuideBioUpdateRequest;
 import com.tripagora.guideprofile.dto.request.GuidePortfolioUpdateRequest;
@@ -24,10 +25,12 @@ import com.tripagora.user.entity.User;
 import com.tripagora.user.exception.UserNotFoundException;
 import com.tripagora.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
@@ -42,6 +45,8 @@ public class GuideProfileService {
     private final GuideProfileRepository guideProfileRepository;
     private final TripRepository tripRepository;
     private final ImageService imageService;
+    private final TransactionTemplate transactionTemplate;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public GuideSwitchResponse switchToGuide(Long userId) {
@@ -132,16 +137,23 @@ public class GuideProfileService {
         return new GuideBioUpdateResponse(guideProfile.getBio());
     }
 
-    @Transactional
+    // S3 업로드 동안 DB 트랜잭션을 열어 두지 않는다: 새 사진 업로드(트랜잭션 밖) → DB 저장(짧은 트랜잭션).
+    // 옛 사진은 DB가 커밋된 뒤에만 지우고, 저장이 실패하면 방금 올린 새 사진을 지운다
     public GuideImageUpdateResponse updateMyImageUrl(Long userId, MultipartFile imageFile) {
-        GuideProfile guideProfile = guideProfileRepository.findByUser_Id(userId).orElseThrow(GuideProfileNotFoundException::new);
+        String newImageUrl = imageService.uploadImage(imageFile);
+        try {
+            transactionTemplate.executeWithoutResult(status -> {
+                GuideProfile guideProfile = guideProfileRepository.findByUser_Id(userId).orElseThrow(GuideProfileNotFoundException::new);
+                String oldImageUrl = guideProfile.getImageUrl();
+                guideProfile.updateImageUrl(newImageUrl);
+                eventPublisher.publishEvent(ImageDeletionEvent.of(oldImageUrl));
+            });
+        } catch (RuntimeException e) {
+            imageService.deleteImagesQuietly(List.of(newImageUrl));
+            throw e;
+        }
 
-        String oldImageUrl = guideProfile.getImageUrl();
-        String newImageUrl = imageService.updateImage(oldImageUrl, imageFile);
-
-        guideProfile.updateImageUrl(newImageUrl);
-
-        return new GuideImageUpdateResponse(guideProfile.getImageUrl());
+        return new GuideImageUpdateResponse(newImageUrl);
     }
 
     @Transactional
