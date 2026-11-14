@@ -4,6 +4,7 @@ import com.tripagora.auth.dto.*;
 import com.tripagora.auth.exception.SocialAccessTokenInvalidException;
 import com.tripagora.auth.exception.SocialJsonParseErrorException;
 import com.tripagora.auth.util.JWTUtil;
+import com.tripagora.common.image.event.ImageDeletionEvent;
 import com.tripagora.common.image.exception.ImageException;
 import com.tripagora.common.image.service.ImageService;
 import com.tripagora.user.entity.SocialType;
@@ -13,17 +14,19 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Collections;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @Service
@@ -34,19 +37,44 @@ public class LoginService {
     private final JWTUtil jwtUtil;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
+    private final TransactionTemplate transactionTemplate;
+    private final ApplicationEventPublisher eventPublisher;
     private final RestTemplate restTemplate = new RestTemplate();
 
     private final String KAKAO_USERINFO_URL = "https://kapi.kakao.com/v2/user/me";
     private final String NAVER_USERINFO_URL = "https://openapi.naver.com/v1/nid/me";
     private static final String NO_PROFILE_IMAGE = "";
 
-    @Transactional
+    // 외부 호출(카카오·네이버 사용자 정보, 프로필 사진 다운로드·S3 업로드)은 DB 트랜잭션 밖에서 먼저 하고,
+    // 사용자·토큰 저장만 짧은 트랜잭션으로 한다. 저장이 실패하면 방금 올린 프로필 사진을 지운다
     public SocialLoginResponse socialLogin(SocialLoginRequest request, SocialType socialType) {
         String userInfoJson = fetchUserInfo(request.socialAccessToken(), socialType);
         SocialUserInfo userInfo = parseUserInfo(userInfoJson, socialType);
 
-        AtomicBoolean isNewUser = new AtomicBoolean(false);
-        User user = saveOrUpdateUser(userInfo.id(), userInfo.profileImageUrl(), socialType, isNewUser);
+        boolean registered = userRepository.findBySocialIdAndSocialType(userInfo.id(), socialType).isPresent();
+        String profileImageUrl = registered ? null : uploadProfileImage(userInfo.profileImageUrl());
+
+        try {
+            return transactionTemplate.execute(status -> saveUserAndIssueTokens(userInfo.id(), socialType, profileImageUrl));
+        } catch (RuntimeException e) {
+            imageService.deleteImagesQuietly(Collections.singletonList(profileImageUrl));
+            throw e;
+        }
+    }
+
+    // 사용자를 찾거나 새로 만들고 토큰을 발급한다 (트랜잭션 안)
+    private SocialLoginResponse saveUserAndIssueTokens(String socialId, SocialType type, String profileImageUrl) {
+        Optional<User> registeredUser = userRepository.findBySocialIdAndSocialType(socialId, type);
+        boolean isNewUser = registeredUser.isEmpty();
+        if (!isNewUser) {
+            // 확인한 뒤 같은 계정이 먼저 가입한 경우: 올려 둔 사진은 쓰지 않으므로 커밋 뒤에 지운다
+            eventPublisher.publishEvent(ImageDeletionEvent.of(profileImageUrl));
+        }
+        User user = registeredUser.orElseGet(() -> userRepository.save(User.builder()
+                .socialId(socialId)
+                .socialType(type)
+                .imageUrl(profileImageUrl)
+                .build()));
 
         String accessToken = jwtUtil.createToken(user.getId(), user.getRole().name(), true);
         String refreshToken = jwtUtil.createToken(user.getId(), user.getRole().name(), false);
@@ -54,7 +82,7 @@ public class LoginService {
         jwtService.deleteRefreshTokenByUserId(user.getId());
         jwtService.saveRefreshToken(user, refreshToken);
 
-        return new SocialLoginResponse(accessToken, refreshToken, isNewUser.get());
+        return new SocialLoginResponse(accessToken, refreshToken, isNewUser);
     }
 
     private String fetchUserInfo(String socialAccessToken, SocialType socialType) {
@@ -98,26 +126,6 @@ public class LoginService {
             };
         } catch (JsonProcessingException e) {
             throw new SocialJsonParseErrorException();
-        }
-    }
-
-    private User saveOrUpdateUser(String socialId, String profileImageUrl, SocialType type, AtomicBoolean isNewUser) {
-        Optional<User> userOpt = userRepository.findBySocialIdAndSocialType(socialId, type);
-
-        if (userOpt.isPresent()) {
-            isNewUser.set(false);
-            return userOpt.get();
-        } else {
-            String s3ImageUrl = uploadProfileImage(profileImageUrl);
-
-            User newUser = User.builder()
-                    .socialId(socialId)
-                    .socialType(type)
-                    .imageUrl(s3ImageUrl)
-                    .build();
-            isNewUser.set(true);
-
-            return userRepository.save(newUser);
         }
     }
 
