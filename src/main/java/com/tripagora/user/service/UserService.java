@@ -2,10 +2,12 @@ package com.tripagora.user.service;
 
 import com.tripagora.auth.repository.RefreshTokenRepository;
 import com.tripagora.common.image.service.ImageService;
+import com.tripagora.participation.repository.ParticipationRepository;
 import com.tripagora.tag.entity.Tag;
 import com.tripagora.tag.exception.InvalidTagSelectionException;
 import com.tripagora.tag.exception.MinimumTagsRequiredException;
 import com.tripagora.tag.repository.TagRepository;
+import com.tripagora.trip.entity.TripStatus;
 import com.tripagora.user.dto.request.NicknameUpdateRequest;
 import com.tripagora.user.dto.response.NicknameUpdateResponse;
 import com.tripagora.user.dto.request.UserTagUpdateRequest;
@@ -16,6 +18,7 @@ import com.tripagora.user.entity.User;
 import com.tripagora.user.exception.DuplicateNicknameException;
 import com.tripagora.user.exception.InvalidNicknameFormatException;
 import com.tripagora.user.exception.UserNotFoundException;
+import com.tripagora.user.exception.WithdrawalNotAllowedException;
 import com.tripagora.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -30,10 +33,18 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class UserService {
+    // 이 상태의 여행에 가이드나 참가자로 있으면 탈퇴할 수 없다 (가이드는 여행을 열 때 참가 기록이 생긴다)
+    private static final List<TripStatus> ACTIVE_TRIP_STATUSES = List.of(
+            TripStatus.RECRUITING,
+            TripStatus.RECRUITMENT_CLOSED,
+            TripStatus.IN_PROGRESS
+    );
+
     private final ImageService imageService;
     private final UserRepository userRepository;
     private final TagRepository tagRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final ParticipationRepository participationRepository;
 
     @Transactional(readOnly = true)
     public UserInfoResponse getUserInfo(long userId) {
@@ -64,6 +75,10 @@ public class UserService {
     @Transactional
     public void withdrawUser(long userId) {
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        if (participationRepository.existsByUser_IdAndTrip_StatusIn(userId, ACTIVE_TRIP_STATUSES)) {
+            throw new WithdrawalNotAllowedException();
+        }
+
         refreshTokenRepository.deleteByUserId(userId);
         userRepository.delete(user);
     }
