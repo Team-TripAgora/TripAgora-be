@@ -79,6 +79,10 @@ public class TestFixture {
         jdbcTemplate.update("INSERT INTO tag (id, name) VALUES (?, ?)", id, name);
     }
 
+    public void userTag(long userId, long tagId) {
+        jdbcTemplate.update("INSERT INTO user_tag (user_id, tag_id) VALUES (?, ?)", userId, tagId);
+    }
+
     public void templateImage(long templateId, int displayOrder) {
         jdbcTemplate.update("INSERT INTO template_image (created_at, modified_at, display_order, image_url, template_id) " +
                 "VALUES (NOW(6), NOW(6), ?, ?, ?)", displayOrder, "https://example.com/template" + templateId + "-" + displayOrder + ".png", templateId);

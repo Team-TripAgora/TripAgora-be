@@ -54,6 +54,8 @@ public interface TripRepository extends JpaRepository<Trip, Long>, TripRepositor
             "AND s.status IN ('RECRUITING', 'RECRUITMENT_CLOSED', 'IN_PROGRESS')")
     boolean existsActiveTripByTemplateId(@Param("templateId") Long templateId);
 
+    boolean existsByTemplate_Id(Long templateId);
+
     List<Trip> findByStatusAndStartDate(TripStatus status, LocalDate startDate);
     List<Trip> findByStatusAndEndDateBefore(TripStatus status, LocalDate yesterday);
 }

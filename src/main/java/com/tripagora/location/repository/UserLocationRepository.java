@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface UserLocationRepository extends JpaRepository<UserLocation, Long> {
     Optional<UserLocation> findByUser_IdAndRoom_Id(Long userId, Long roomId);
     List<UserLocation> findByRoom_Id(Long roomId);
+    void deleteByUser_Id(Long userId);
 }

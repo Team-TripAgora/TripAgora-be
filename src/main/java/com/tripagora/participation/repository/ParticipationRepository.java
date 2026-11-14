@@ -20,6 +20,7 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
     // TODO: 두 메서드 합치기?
     Optional<Participation> findByUser_IdAndTrip_Id(long userId, long tripId);
     boolean existsByUser_IdAndTrip_Id(long userId, long tripId);
+    boolean existsByUser_IdAndTrip_StatusIn(long userId, List<TripStatus> statuses);
 
     Slice<Participation> findByUserAndRoleAndTrip_Status(
             User user,
