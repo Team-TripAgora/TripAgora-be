@@ -1,12 +1,13 @@
 package com.tripagora.trip.entity;
 
 import com.tripagora.common.entity.BaseEntity;
+import com.tripagora.itinerary.entity.Itineraries;
+import com.tripagora.itinerary.entity.Itinerary;
 import com.tripagora.participation.entity.Participation;
 import com.tripagora.review.entity.Review;
 import com.tripagora.room.entity.Room;
 import com.tripagora.trip.exception.TripFullException;
 import com.tripagora.template.entity.Template;
-import com.tripagora.template.entity.TemplateItinerary;
 import com.tripagora.wishlist.entity.Wishlist;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -49,7 +50,7 @@ public class Trip extends BaseEntity {
 
     @OrderBy("day ASC , startTime ASC ")
     @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<TripItinerary> tripItineraries = new ArrayList<>();
+    private List<Itinerary> itineraries = new ArrayList<>();
 
     @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Participation> participants = new ArrayList<>();
@@ -72,8 +73,20 @@ public class Trip extends BaseEntity {
         this.status = TripStatus.RECRUITING;
     }
 
-    public void addItinerary(TripItinerary itinerary) {
-        this.tripItineraries.add(itinerary);
+    // 일정을 통째로 바꾼다 (일차 검사는 Itineraries를 만들 때 끝난다)
+    public void replaceItineraries(Itineraries itineraries) {
+        this.itineraries.clear();
+        itineraries.values().forEach(itinerary -> {
+            itinerary.assignTo(this);
+            this.itineraries.add(itinerary);
+        });
+    }
+
+    // 템플릿 일정을 복사해 이 여행의 일정으로 갖는다 (이후 템플릿 일정이 바뀌어도 영향 없음)
+    public void copyItinerariesFrom(Template template) {
+        replaceItineraries(new Itineraries(template.getItineraries().stream()
+                .map(Itinerary::copy)
+                .toList()));
     }
 
     public void addParticipation(Participation participation) {
@@ -95,10 +108,6 @@ public class Trip extends BaseEntity {
         this.status = newStatus;
     }
 
-    public void clearItineraries() {
-        this.tripItineraries.clear();
-    }
-
     public void increaseParticipant() {
         if (this.currentParticipants >= this.maxParticipants) {
             throw new TripFullException();
@@ -114,11 +123,8 @@ public class Trip extends BaseEntity {
     }
 
     public static LocalDate calculateEndDate(Template template, LocalDate startDate) {
-        int maxDay = template.getTemplateItineraries().stream()
-                .mapToInt(TemplateItinerary::getDay)
-                .max()
-                .orElse(1);  // 일정이 없으면 당일 여행으로 간주
+        int lastDay = new Itineraries(template.getItineraries()).lastDay();
 
-        return startDate.plusDays(maxDay - 1);
+        return startDate.plusDays(lastDay - 1);
     }
 }

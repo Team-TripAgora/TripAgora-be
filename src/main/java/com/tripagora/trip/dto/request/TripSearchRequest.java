@@ -1,24 +1,21 @@
 package com.tripagora.trip.dto.request;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.util.List;
 
-@Getter
-@Setter
-public class TripSearchRequest {
-    private String keyword;
+// 여행 검색 조건 (쿼리 파라미터). 모두 생략할 수 있다
+public record TripSearchRequest(
+        String keyword,
 
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    private LocalDate searchStartDate;
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        LocalDate searchStartDate,
 
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    private LocalDate searchEndDate;
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        LocalDate searchEndDate,
 
-    private List<Long> tagIds;
+        List<Long> tagIds,
 
-    private List<Long> regionIds;
+        List<Long> regionIds) {
 }

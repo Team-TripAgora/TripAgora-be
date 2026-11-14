@@ -4,7 +4,9 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.sun.net.httpserver.HttpServer;
 import com.tripagora.auth.service.LoginService;
 import com.tripagora.support.IntegrationTest;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -60,21 +62,17 @@ class SocialLoginTransactionTest extends IntegrationTest {
     private RestTemplate kakaoRestTemplate;
     private ClientHttpRequestFactory originalRequestFactory;
     private MockRestServiceServer kakao;
-    private HttpServer imageServer;
-    private ExecutorService imageServerThreads;
+    private static HttpServer imageServer;
+    private static ExecutorService imageServerThreads;
 
     // 외부 호출 순간 DB 트랜잭션이 열려 있었는지, 올린 파일의 키
     private final List<Boolean> transactionActiveWhileCallingKakao = new CopyOnWriteArrayList<>();
     private final List<Boolean> transactionActiveWhileUploading = new CopyOnWriteArrayList<>();
     private final List<String> uploadedKeys = new CopyOnWriteArrayList<>();
 
-    @BeforeEach
-    void setUp() throws IOException {
-        Object loginServiceTarget = AopTestUtils.getUltimateTargetObject(loginService);
-        kakaoRestTemplate = (RestTemplate) ReflectionTestUtils.getField(loginServiceTarget, "restTemplate");
-        originalRequestFactory = kakaoRestTemplate.getRequestFactory();
-        kakao = MockRestServiceServer.bindTo(kakaoRestTemplate).build();
-
+    // 로컬 HTTP 서버는 클래스마다 한 번만 띄운다 (테스트마다 포트를 새로 열면 Windows에서 가끔 소켓 오류가 난다)
+    @BeforeAll
+    static void startImageServer() throws IOException {
         imageServerThreads = Executors.newCachedThreadPool();
         imageServer = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
         imageServer.setExecutor(imageServerThreads);
@@ -87,6 +85,20 @@ class SocialLoginTransactionTest extends IntegrationTest {
             }
         });
         imageServer.start();
+    }
+
+    @AfterAll
+    static void stopImageServer() {
+        imageServer.stop(0);
+        imageServerThreads.shutdownNow();
+    }
+
+    @BeforeEach
+    void setUp() {
+        Object loginServiceTarget = AopTestUtils.getUltimateTargetObject(loginService);
+        kakaoRestTemplate = (RestTemplate) ReflectionTestUtils.getField(loginServiceTarget, "restTemplate");
+        originalRequestFactory = kakaoRestTemplate.getRequestFactory();
+        kakao = MockRestServiceServer.bindTo(kakaoRestTemplate).build();
 
         doAnswer(invocation -> {
             transactionActiveWhileUploading.add(TransactionSynchronizationManager.isActualTransactionActive());
@@ -99,8 +111,6 @@ class SocialLoginTransactionTest extends IntegrationTest {
     @AfterEach
     void tearDown() {
         kakaoRestTemplate.setRequestFactory(originalRequestFactory);
-        imageServer.stop(0);
-        imageServerThreads.shutdownNow();
     }
 
     @Test

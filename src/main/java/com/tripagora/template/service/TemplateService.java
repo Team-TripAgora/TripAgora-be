@@ -14,11 +14,13 @@ import com.tripagora.tag.entity.Tag;
 import com.tripagora.tag.exception.InvalidTagSelectionException;
 import com.tripagora.tag.exception.MaximumTagsExceededException;
 import com.tripagora.tag.repository.TagRepository;
+import com.tripagora.itinerary.dto.request.ItineraryUpdateRequest;
+import com.tripagora.itinerary.dto.response.ItinerariesResponse;
+import com.tripagora.itinerary.dto.response.ItineraryItemResponse;
 import com.tripagora.template.dto.request.*;
 import com.tripagora.template.dto.response.*;
 import com.tripagora.template.entity.Template;
 import com.tripagora.template.entity.TemplateImage;
-import com.tripagora.template.exception.ItineraryDaySequenceInvalidException;
 import com.tripagora.template.exception.TemplateHasActiveTripsException;
 import com.tripagora.template.exception.TemplateNotFoundException;
 import com.tripagora.template.repository.TemplateRepository;
@@ -36,7 +38,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -128,15 +129,8 @@ public class TemplateService {
     public ItinerariesResponse getItineraries(long userId, long templateId) {
         Template template = findTemplateAndVerifyOwner(userId, templateId);
 
-        List<ItineraryItemResponse> itineraries = template.getTemplateItineraries().stream()
-                .map(itinerary -> new ItineraryItemResponse(
-                        itinerary.getId(),
-                        itinerary.getDay(),
-                        itinerary.getLocation(),
-                        itinerary.getContent(),
-                        itinerary.getStartTime(),
-                        itinerary.getLatitude(),
-                        itinerary.getLongitude()))
+        List<ItineraryItemResponse> itineraries = template.getItineraries().stream()
+                .map(ItineraryItemResponse::from)
                 .toList();
 
         return new ItinerariesResponse(itineraries);
@@ -263,18 +257,7 @@ public class TemplateService {
         Template template = findTemplateAndVerifyOwner(userId, templateId);
         verifyNoActiveTrips(templateId);
 
-        Map<Integer, List<ItineraryItemRequest>> itinerariesByDay = request.itineraries().stream()
-                .collect(Collectors.groupingBy(ItineraryItemRequest::day));
-
-        int maxDay = itinerariesByDay.keySet().stream().max(Integer::compareTo).orElse(0);
-        for (int i = 1; i <= maxDay; i++) {
-            if (!itinerariesByDay.containsKey(i)) {
-                throw new ItineraryDaySequenceInvalidException();
-            }
-        }
-
-        template.clearItineraries();
-        request.itineraries().forEach(item -> template.addItinerary(item.toTemplateItinerary(template)));
+        template.replaceItineraries(request.toItineraries());
     }
 
     @Transactional

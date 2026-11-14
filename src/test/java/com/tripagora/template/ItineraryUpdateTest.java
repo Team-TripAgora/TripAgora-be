@@ -23,6 +23,11 @@ class ItineraryUpdateTest extends IntegrationTest {
     private static final String NEW_ITINERARIES = "{\"itineraries\":["
             + "{\"day\":1,\"location\":\"경복궁\",\"content\":\"고궁 산책\",\"startTime\":\"09:00:00\",\"latitude\":37.57,\"longitude\":126.97},"
             + "{\"day\":2,\"location\":\"남산타워\",\"content\":\"야경\",\"startTime\":\"19:00:00\",\"latitude\":37.55,\"longitude\":126.98}]}";
+    // 2일차가 빠진 일정 (1일차, 3일차)
+    private static final String MISSING_DAY_ITINERARIES = "{\"itineraries\":["
+            + "{\"day\":1,\"location\":\"경복궁\",\"content\":\"고궁 산책\",\"startTime\":\"09:00:00\",\"latitude\":37.57,\"longitude\":126.97},"
+            + "{\"day\":3,\"location\":\"남산타워\",\"content\":\"야경\",\"startTime\":\"19:00:00\",\"latitude\":37.55,\"longitude\":126.98}]}";
+    private static final String DAY_SEQUENCE_MESSAGE = "일정은 1일차부터 순차적으로 존재해야 합니다.";
 
     @BeforeEach
     void setUp() {
@@ -65,5 +70,41 @@ class ItineraryUpdateTest extends IntegrationTest {
         mockMvc.perform(get("/api/trips/1/itineraries").header("Authorization", bearer(GUIDE, Role.GUIDE)))
                 .andExpect(jsonPath("$.data.itineraries", hasSize(2)))
                 .andExpect(jsonPath("$.data.itineraries[*].location", contains("경복궁", "남산타워")));
+    }
+
+    @Test
+    @DisplayName("템플릿 일정에 빠진 일차가 있으면 400이고, 기존 일정은 그대로다")
+    void rejectsTemplateItinerariesWithMissingDay() throws Exception {
+        fixture.template(1L, GUIDE, 3);
+
+        mockMvc.perform(put("/api/templates/1/itineraries")
+                        .header("Authorization", bearer(GUIDE, Role.GUIDE))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(MISSING_DAY_ITINERARIES))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(DAY_SEQUENCE_MESSAGE));
+
+        mockMvc.perform(get("/api/templates/1/itineraries").header("Authorization", bearer(GUIDE, Role.GUIDE)))
+                .andExpect(jsonPath("$.data.itineraries[*].location", contains("장소1", "장소2", "장소3")));
+    }
+
+    @Test
+    @DisplayName("진행 중 여행 일정에 빠진 일차가 있으면 400이고, 기존 일정은 그대로다")
+    void rejectsTripItinerariesWithMissingDay() throws Exception {
+        LocalDate today = LocalDate.now();
+        fixture.template(1L, GUIDE, 2);
+        fixture.trip(1L, 1L, TripStatus.IN_PROGRESS, today.minusDays(1), today);
+        fixture.tripItinerary(1L, 1);
+        fixture.participation(1L, 1L, GUIDE, Role.GUIDE);
+
+        mockMvc.perform(put("/api/trips/1/itineraries")
+                        .header("Authorization", bearer(GUIDE, Role.GUIDE))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(MISSING_DAY_ITINERARIES))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(DAY_SEQUENCE_MESSAGE));
+
+        mockMvc.perform(get("/api/trips/1/itineraries").header("Authorization", bearer(GUIDE, Role.GUIDE)))
+                .andExpect(jsonPath("$.data.itineraries[*].location", contains("장소1")));
     }
 }

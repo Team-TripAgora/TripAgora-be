@@ -78,8 +78,8 @@ public class TripRepositoryImpl implements TripRepositoryCustom {
         builder.and(trip.status.eq(TripStatus.RECRUITING));
 
         // --- 1. 검색어 (Keyword) ---
-        if (StringUtils.hasText(request.getKeyword())) {
-            String keyword = request.getKeyword();
+        if (StringUtils.hasText(request.keyword())) {
+            String keyword = request.keyword();
             builder.and(
                     template.title.containsIgnoreCase(keyword)
                             .or(template.content.containsIgnoreCase(keyword))
@@ -88,35 +88,35 @@ public class TripRepositoryImpl implements TripRepositoryCustom {
         }
 
         // --- 2. 필터: 일정 (Date Range Overlap) ---
-        if (request.getSearchStartDate() != null && request.getSearchEndDate() != null) {
+        if (request.searchStartDate() != null && request.searchEndDate() != null) {
             // (trip.startDate <= request.endDate) AND (trip.endDate >= request.startDate)
-            builder.and(trip.startDate.loe(request.getSearchEndDate())
-                    .and(trip.endDate.goe(request.getSearchStartDate())));
-        } else if (request.getSearchStartDate() != null) {
+            builder.and(trip.startDate.loe(request.searchEndDate())
+                    .and(trip.endDate.goe(request.searchStartDate())));
+        } else if (request.searchStartDate() != null) {
             // 시작 날짜만 있는 경우: 그날 이후로 시작하는 모든 여행
-            builder.and(trip.startDate.goe(request.getSearchStartDate()));
-        } else if (request.getSearchEndDate() != null) {
+            builder.and(trip.startDate.goe(request.searchStartDate()));
+        } else if (request.searchEndDate() != null) {
             // 종료 날짜만 있는 경우: 그날 이전에 끝나는 모든 여행 (필요시)
-            builder.and(trip.endDate.loe(request.getSearchEndDate()));
+            builder.and(trip.endDate.loe(request.searchEndDate()));
         }
 
         // --- 3. 필터: 지역 (regionIds) - (Req #4: Parent/Child logic) ---
-        if (request.getRegionIds() != null && !request.getRegionIds().isEmpty()) {
+        if (request.regionIds() != null && !request.regionIds().isEmpty()) {
             // 1. 해당 지역이거나 (e.g., 강남구 ID)
             // 2. 해당 지역의 부모가 검색 ID이거나 (e.g., 강남구의 부모 ID = 서울 ID)
             builder.and(
-                    region.id.in(request.getRegionIds())
-                            .or(parentRegion.id.in(request.getRegionIds()))
+                    region.id.in(request.regionIds())
+                            .or(parentRegion.id.in(request.regionIds()))
             );
         }
 
         // --- 4. 필터: 태그 (tagIds) ---
-        if (request.getTagIds() != null && !request.getTagIds().isEmpty()) {
+        if (request.tagIds() != null && !request.tagIds().isEmpty()) {
             builder.and(template.id.in(
                     JPAExpressions
                             .select(templateTag.template.id)
                             .from(templateTag)
-                            .where(templateTag.tag.id.in(request.getTagIds()))
+                            .where(templateTag.tag.id.in(request.tagIds()))
             ));
         }
 

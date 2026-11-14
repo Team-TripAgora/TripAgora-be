@@ -7,7 +7,8 @@ import com.sun.net.httpserver.HttpServer;
 import com.tripagora.common.image.exception.ImageDeletionFailedException;
 import com.tripagora.common.image.exception.ImageUploadFailedException;
 import com.tripagora.common.image.exception.UnSupportedImageFormatException;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -43,15 +44,12 @@ class ImageServiceTest {
 
     private final AmazonS3 amazonS3 = mock(AmazonS3.class);
     private final ImageService imageService = new ImageService(amazonS3);
-    private HttpServer server;
-    private ExecutorService serverThreads;
+    private static HttpServer server;
+    private static ExecutorService serverThreads;
 
-    @BeforeEach
-    void setUp() throws IOException {
-        ReflectionTestUtils.setField(imageService, "bucketName", BUCKET);
-        when(amazonS3.getUrl(eq(BUCKET), anyString())).thenAnswer(invocation ->
-                new URL("https://" + BUCKET + ".s3.ap-northeast-2.amazonaws.com/" + invocation.getArgument(1)));
-
+    // 로컬 HTTP 서버는 클래스마다 한 번만 띄운다 (테스트마다 포트를 새로 열면 Windows에서 가끔 소켓 오류가 난다)
+    @BeforeAll
+    static void startServer() throws IOException {
         serverThreads = Executors.newCachedThreadPool();
         server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
         server.setExecutor(serverThreads);
@@ -68,10 +66,17 @@ class ImageServiceTest {
         server.start();
     }
 
-    @AfterEach
-    void tearDown() {
+    @AfterAll
+    static void stopServer() {
         server.stop(0);
         serverThreads.shutdownNow();
+    }
+
+    @BeforeEach
+    void setUp() {
+        ReflectionTestUtils.setField(imageService, "bucketName", BUCKET);
+        when(amazonS3.getUrl(eq(BUCKET), anyString())).thenAnswer(invocation ->
+                new URL("https://" + BUCKET + ".s3.ap-northeast-2.amazonaws.com/" + invocation.getArgument(1)));
     }
 
     @Test

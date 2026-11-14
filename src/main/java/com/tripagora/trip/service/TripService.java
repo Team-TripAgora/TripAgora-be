@@ -3,6 +3,9 @@ package com.tripagora.trip.service;
 import com.tripagora.auth.exception.AccessDeniedException;
 import com.tripagora.guideprofile.entity.GuideProfile;
 import com.tripagora.guideprofile.exception.GuideProfileNotFoundException;
+import com.tripagora.itinerary.dto.request.ItineraryUpdateRequest;
+import com.tripagora.itinerary.dto.response.ItinerariesResponse;
+import com.tripagora.itinerary.dto.response.ItineraryItemResponse;
 import com.tripagora.participation.entity.Participation;
 import com.tripagora.participation.exception.ParticipationNotFoundException;
 import com.tripagora.participation.repository.ParticipationRepository;
@@ -15,16 +18,10 @@ import com.tripagora.trip.dto.request.TripSearchRequest;
 import com.tripagora.trip.dto.request.TripUpdateRequest;
 import com.tripagora.trip.dto.response.*;
 import com.tripagora.trip.entity.Trip;
-import com.tripagora.trip.entity.TripItinerary;
 import com.tripagora.trip.entity.TripStatus;
 import com.tripagora.trip.exception.*;
 import com.tripagora.trip.repository.TripRepository;
-import com.tripagora.template.dto.request.ItineraryItemRequest;
-import com.tripagora.template.dto.request.ItineraryUpdateRequest;
-import com.tripagora.template.dto.response.ItinerariesResponse;
-import com.tripagora.template.dto.response.ItineraryItemResponse;
 import com.tripagora.template.entity.Template;
-import com.tripagora.template.exception.ItineraryDaySequenceInvalidException;
 import com.tripagora.template.service.TemplateService;
 import com.tripagora.user.entity.Role;
 import com.tripagora.user.entity.User;
@@ -39,7 +36,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -85,19 +81,7 @@ public class TripService {
                 .startDate(request.startDate())
                 .build();
 
-        List<TripItinerary> tripItineraries = template.getTemplateItineraries().stream()
-                .map(templateItinerary -> TripItinerary.builder()
-                        .trip(trip)
-                        .day(templateItinerary.getDay())
-                        .location(templateItinerary.getLocation())
-                        .content(templateItinerary.getContent())
-                        .startTime(templateItinerary.getStartTime())
-                        .latitude(templateItinerary.getLatitude())
-                        .longitude(templateItinerary.getLongitude())
-                        .build())
-                .toList();
-
-        tripItineraries.forEach(trip::addItinerary);
+        trip.copyItinerariesFrom(template);
 
         Trip savedTrip = tripRepository.save(trip);
 
@@ -306,15 +290,8 @@ public class TripService {
     public ItinerariesResponse getItineraries(long tripId) {
         Trip trip = tripRepository.findById(tripId).orElseThrow(TripNotFoundException::new);
 
-        List<ItineraryItemResponse> itineraries = trip.getTripItineraries().stream()
-                .map(itinerary -> new ItineraryItemResponse(
-                        itinerary.getId(),
-                        itinerary.getDay(),
-                        itinerary.getLocation(),
-                        itinerary.getContent(),
-                        itinerary.getStartTime(),
-                        itinerary.getLatitude(),
-                        itinerary.getLongitude()))
+        List<ItineraryItemResponse> itineraries = trip.getItineraries().stream()
+                .map(ItineraryItemResponse::from)
                 .toList();
 
         return new ItinerariesResponse(itineraries);
@@ -369,18 +346,7 @@ public class TripService {
             throw new TripNotInProgressException();
         }
 
-        Map<Integer, List<ItineraryItemRequest>> itinerariesByDay = request.itineraries().stream()
-                .collect(Collectors.groupingBy(ItineraryItemRequest::day));
-
-        int maxDay = itinerariesByDay.keySet().stream().max(Integer::compareTo).orElse(0);
-        for (int i = 1; i <= maxDay; i++) {
-            if (!itinerariesByDay.containsKey(i)) {
-                throw new ItineraryDaySequenceInvalidException();
-            }
-        }
-
-        trip.clearItineraries();
-        request.itineraries().forEach(item -> trip.addItinerary(item.toTripItinerary(trip)));
+        trip.replaceItineraries(request.toItineraries());
     }
 
     private Trip findTripAndVerifyOwner(long userId, long tripId) {
