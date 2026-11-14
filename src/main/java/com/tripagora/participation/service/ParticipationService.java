@@ -27,8 +27,10 @@ public class ParticipationService {
 
     @Transactional
     public ParticipationResponse applyForTrip(Long userId, Long tripId) {
-        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
-        Trip trip = tripRepository.findById(tripId).orElseThrow(TripNotFoundException::new);
+        // 사용자 → 여행 순서로 잠근다 (순서를 고정해 데드락을 막는다). 같은 사용자의 신청과
+        // 같은 여행의 인원 변경이 한 번에 하나씩 처리되므로, 아래 정원·중복·일정 확인이 최신 상태로 이루어진다
+        User user = userRepository.findByIdForUpdate(userId).orElseThrow(UserNotFoundException::new);
+        Trip trip = tripRepository.findByIdForUpdate(tripId).orElseThrow(TripNotFoundException::new);
 
         trip.validateJoinable();
 
@@ -79,7 +81,7 @@ public class ParticipationService {
 
     @Transactional
     public void cancelParticipation(Long userId, Long tripId) {
-        Trip trip = tripRepository.findById(tripId).orElseThrow(TripNotFoundException::new);
+        Trip trip = tripRepository.findByIdForUpdate(tripId).orElseThrow(TripNotFoundException::new);
 
         Participation participation = participationRepository.findByUser_IdAndTrip_Id(userId, tripId)
                 .orElseThrow(ParticipationNotFoundException::new);
