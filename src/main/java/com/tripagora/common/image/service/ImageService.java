@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URLConnection;
+import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -123,6 +124,17 @@ public class ImageService {
             amazonS3.deleteObject(bucketName, fileName);
         } catch (Exception e) {
             throw new ImageDeletionFailedException();
+        }
+    }
+
+    // 여러 파일을 지운다. 하나가 실패해도 나머지를 지우고, 실패는 로그만 남긴다 (파일이 남을 뿐 깨진 이미지는 생기지 않는다)
+    public void deleteImagesQuietly(List<String> imageUrls) {
+        for (String imageUrl : imageUrls) {
+            try {
+                deleteImage(imageUrl);
+            } catch (RuntimeException e) {
+                log.warn("S3 이미지 삭제 실패, 파일이 남는다: {}", imageUrl, e);
+            }
         }
     }
 
