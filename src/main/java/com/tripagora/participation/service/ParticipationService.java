@@ -74,6 +74,7 @@ public class ParticipationService {
         Participation participation = participationRepository.findByUser_IdAndTrip_Id(userId, tripId)
                 .orElseThrow(ParticipationNotFoundException::new);
 
+        participation.validateCancellable();
         validateTripStatus(trip);
 
         trip.decreaseParticipant();

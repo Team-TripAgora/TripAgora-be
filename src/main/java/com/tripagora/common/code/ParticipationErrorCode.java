@@ -11,6 +11,7 @@ public enum ParticipationErrorCode implements ResponseCode {
     ALREADY_PARTICIPATING(HttpStatus.CONFLICT, "이미 해당 여행에 참여 신청을 했습니다."),
     CANNOT_PARTICIPATE_IN_OWN_TRIP(HttpStatus.BAD_REQUEST, "자신이 개설한 여행에는 참여할 수 없습니다."),
     PARTICIPATION_CANCEL_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "인원 모집중 혹은 종료된 여행만 참여 취소를 할 수 있습니다."),
+    GUIDE_CANNOT_CANCEL_PARTICIPATION(HttpStatus.BAD_REQUEST, "가이드는 자신이 개설한 여행의 참여를 취소할 수 없습니다."),
     CONFLICTING_PARTICIPATION(HttpStatus.BAD_REQUEST, "해당 날짜에 이미 참여중인 다른 여행이 존재합니다.");
 
     private final HttpStatus httpStatus;

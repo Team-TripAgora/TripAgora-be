@@ -102,6 +102,21 @@ class ParticipationTest extends IntegrationTest {
         assertThat(currentParticipants()).isEqualTo(1);
     }
 
+    @Test
+    @DisplayName("가이드는 자기 여행의 참가를 취소할 수 없다")
+    void guideCannotCancelOwnTrip() throws Exception {
+        trip(TripStatus.RECRUITING, today.plusDays(10));
+        travelerJoined();
+
+        mockMvc.perform(delete("/api/participation/trips/" + TRIP).header("Authorization", bearer(GUIDE, Role.GUIDE)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("가이드는 자신이 개설한 여행의 참여를 취소할 수 없습니다."));
+
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM participation WHERE trip_id = ? AND role = 'GUIDE'", Integer.class, TRIP))
+                .isEqualTo(1);
+        assertThat(currentParticipants()).isEqualTo(1);
+    }
+
     // 하루짜리 여행 (가이드는 참가 행이 있지만 인원 수에는 들어가지 않는다)
     private void trip(TripStatus status, LocalDate startDate) {
         fixture.trip(TRIP, TEMPLATE, status, startDate, startDate);
