@@ -86,10 +86,18 @@ public class UserService {
             throw new WithdrawalNotAllowedException();
         }
 
+        // 지울 사진(사용자·가이드)은 익명화로 주소가 비워지기 전에 모아 두고, 커밋된 뒤에 S3에서 지운다
+        List<String> profileImageUrls = new ArrayList<>();
+        profileImageUrls.add(user.getImageUrl());
+        if (user.getGuideProfile() != null) {
+            profileImageUrls.add(user.getGuideProfile().getImageUrl());
+        }
+
         // 하드 삭제하면 남의 참가·리뷰·채팅 이력까지 지워지거나 외래 키에 막힌다. 행은 남기고 익명화한다
         refreshTokenRepository.deleteByUserId(userId);
         userLocationRepository.deleteByUser_Id(userId);
         user.withdraw();
+        eventPublisher.publishEvent(new ImageDeletionEvent(profileImageUrls));
     }
 
     @Transactional

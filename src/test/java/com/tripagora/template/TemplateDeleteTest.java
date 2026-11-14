@@ -13,6 +13,10 @@ import org.springframework.test.web.servlet.ResultActions;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.after;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -23,6 +27,8 @@ class TemplateDeleteTest extends IntegrationTest {
     private static final long TRAVELER = 2L;
     private static final long TEMPLATE = 1L;
     private static final long TRIP = 1L;
+    private static final String BUCKET = "test-bucket";
+    private static final String S3_URL = "https://" + BUCKET + ".s3.ap-northeast-2.amazonaws.com/";
     private static final String HAS_TRIPS_MESSAGE = "해당 플랜으로 개설된 여행이 존재하여 수정 또는 삭제할 수 없습니다.";
 
     @Autowired
@@ -77,6 +83,34 @@ class TemplateDeleteTest extends IntegrationTest {
         deleteTemplate().andExpect(status().isOk());
 
         assertThat(rowCount("SELECT COUNT(*) FROM template WHERE id = " + TEMPLATE)).isZero();
+    }
+
+    @Test
+    @DisplayName("템플릿 삭제가 커밋되면 그 이미지를 S3에서 지운다")
+    void deletesTemplateImagesAfterDelete() throws Exception {
+        templateImage("images/a.png");
+        templateImage("images/b.png");
+
+        deleteTemplate().andExpect(status().isOk());
+
+        verify(amazonS3, timeout(3_000)).deleteObject(BUCKET, "images/a.png");
+        verify(amazonS3, timeout(3_000)).deleteObject(BUCKET, "images/b.png");
+    }
+
+    @Test
+    @DisplayName("템플릿 삭제가 막히면 이미지를 지우지 않는다")
+    void keepsTemplateImagesWhenDeleteIsBlocked() throws Exception {
+        templateImage("images/a.png");
+        completedTripWithReview();
+
+        deleteTemplate().andExpect(status().isConflict());
+
+        verify(amazonS3, after(1_000).never()).deleteObject(anyString(), anyString());
+    }
+
+    private void templateImage(String key) {
+        jdbcTemplate.update("INSERT INTO template_image (created_at, modified_at, display_order, image_url, template_id) " +
+                "VALUES (NOW(6), NOW(6), 1, ?, ?)", S3_URL + key, TEMPLATE);
     }
 
     private void completedTripWithReview() {

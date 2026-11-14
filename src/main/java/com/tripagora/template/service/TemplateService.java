@@ -285,7 +285,11 @@ public class TemplateService {
             throw new TemplateHasActiveTripsException();
         }
 
+        List<String> imageUrls = template.getTemplateImages().stream()
+                .map(TemplateImage::getImageUrl)
+                .toList();
         templateRepository.delete(template);
+        eventPublisher.publishEvent(new ImageDeletionEvent(imageUrls));
     }
 
     public Template findTemplateAndVerifyOwner(long userId, long templateId) {

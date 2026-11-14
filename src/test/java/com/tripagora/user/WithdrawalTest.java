@@ -23,6 +23,10 @@ import org.springframework.web.client.RestTemplate;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.after;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
@@ -42,6 +46,8 @@ class WithdrawalTest extends IntegrationTest {
     private static final String ACTIVE_TRIP_MESSAGE = "진행 중이거나 예정된 여행이 있어 탈퇴할 수 없습니다.";
     private static final String WITHDRAWN_NICKNAME = "탈퇴한 사용자";
     private static final long ROOM = 1L;
+    private static final String BUCKET = "test-bucket";
+    private static final String S3_URL = "https://" + BUCKET + ".s3.ap-northeast-2.amazonaws.com/";
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -175,6 +181,29 @@ class WithdrawalTest extends IntegrationTest {
         }
 
         assertThat(rowCount("SELECT COUNT(*) FROM users WHERE social_id = '777' AND id <> " + TRAVELER)).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("탈퇴가 커밋되면 사용자 사진과 가이드 사진을 S3에서 지운다")
+    void deletesProfileImagesAfterWithdrawal() throws Exception {
+        jdbcTemplate.update("UPDATE users SET image_url = ? WHERE id = ?", S3_URL + "images/user.png", GUIDE);
+        jdbcTemplate.update("UPDATE guide_profile SET image_url = ? WHERE id = ?", S3_URL + "images/guide.png", GUIDE);
+
+        withdraw(GUIDE, Role.GUIDE).andExpect(status().isOk());
+
+        verify(amazonS3, timeout(3_000)).deleteObject(BUCKET, "images/user.png");
+        verify(amazonS3, timeout(3_000)).deleteObject(BUCKET, "images/guide.png");
+    }
+
+    @Test
+    @DisplayName("탈퇴가 막히면 S3 사진을 지우지 않는다")
+    void keepsProfileImageWhenWithdrawalIsBlocked() throws Exception {
+        tripWithParticipants(TripStatus.RECRUITING);
+        jdbcTemplate.update("UPDATE users SET image_url = ? WHERE id = ?", S3_URL + "images/user.png", TRAVELER);
+
+        withdraw(TRAVELER, Role.TRAVELER).andExpect(status().isBadRequest());
+
+        verify(amazonS3, after(1_000).never()).deleteObject(anyString(), anyString());
     }
 
     // 완료된 여행에 여행객이 참가해 리뷰·채팅·위치를 남긴 상태
