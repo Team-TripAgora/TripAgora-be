@@ -2,6 +2,8 @@ package com.tripagora.trip.controller;
 
 import com.tripagora.common.code.SuccessCode;
 import com.tripagora.common.response.ApiResponse;
+import com.tripagora.itinerary.dto.request.ItineraryUpdateRequest;
+import com.tripagora.itinerary.dto.response.ItinerariesResponse;
 import com.tripagora.trip.dto.request.TripCreateRequest;
 import com.tripagora.trip.dto.request.TripSearchRequest;
 import com.tripagora.trip.dto.request.TripUpdateRequest;
@@ -11,8 +13,6 @@ import com.tripagora.trip.dto.response.TripDetailResponse;
 import com.tripagora.trip.dto.response.TripListResponse;
 import com.tripagora.trip.entity.TripStatus;
 import com.tripagora.trip.service.TripService;
-import com.tripagora.template.dto.request.ItineraryUpdateRequest;
-import com.tripagora.template.dto.response.ItinerariesResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;

@@ -1,4 +1,4 @@
-package com.tripagora.template.dto.request;
+package com.tripagora.itinerary.dto.request;
 
 import com.tripagora.itinerary.entity.Itinerary;
 import jakarta.validation.constraints.NotBlank;

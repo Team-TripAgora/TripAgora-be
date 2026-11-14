@@ -1,6 +1,6 @@
 package com.tripagora.itinerary.entity;
 
-import com.tripagora.template.exception.ItineraryDaySequenceInvalidException;
+import com.tripagora.itinerary.exception.ItineraryDaySequenceInvalidException;
 
 import java.util.List;
 import java.util.Set;

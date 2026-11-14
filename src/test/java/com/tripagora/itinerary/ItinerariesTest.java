@@ -2,7 +2,7 @@ package com.tripagora.itinerary;
 
 import com.tripagora.itinerary.entity.Itineraries;
 import com.tripagora.itinerary.entity.Itinerary;
-import com.tripagora.template.exception.ItineraryDaySequenceInvalidException;
+import com.tripagora.itinerary.exception.ItineraryDaySequenceInvalidException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

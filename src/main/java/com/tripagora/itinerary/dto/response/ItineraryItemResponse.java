@@ -1,4 +1,4 @@
-package com.tripagora.template.dto.response;
+package com.tripagora.itinerary.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.tripagora.itinerary.entity.Itinerary;
