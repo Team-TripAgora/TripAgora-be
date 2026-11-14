@@ -2,6 +2,7 @@ package com.tripagora.user.service;
 
 import com.tripagora.auth.repository.RefreshTokenRepository;
 import com.tripagora.common.image.service.ImageService;
+import com.tripagora.location.repository.UserLocationRepository;
 import com.tripagora.participation.repository.ParticipationRepository;
 import com.tripagora.tag.entity.Tag;
 import com.tripagora.tag.exception.InvalidTagSelectionException;
@@ -45,6 +46,7 @@ public class UserService {
     private final TagRepository tagRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final ParticipationRepository participationRepository;
+    private final UserLocationRepository userLocationRepository;
 
     @Transactional(readOnly = true)
     public UserInfoResponse getUserInfo(long userId) {
@@ -79,8 +81,10 @@ public class UserService {
             throw new WithdrawalNotAllowedException();
         }
 
+        // 하드 삭제하면 남의 참가·리뷰·채팅 이력까지 지워지거나 외래 키에 막힌다. 행은 남기고 익명화한다
         refreshTokenRepository.deleteByUserId(userId);
-        userRepository.delete(user);
+        userLocationRepository.deleteByUser_Id(userId);
+        user.withdraw();
     }
 
     @Transactional

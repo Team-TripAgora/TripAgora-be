@@ -28,6 +28,10 @@ import java.util.stream.Collectors;
 )
 
 public class User extends BaseEntity {
+    // 탈퇴한 사용자는 소셜 id를 이 표식으로 바꿔 소셜 계정과의 연결을 끊는다 (같은 계정으로 다시 가입할 수 있게)
+    private static final String WITHDRAWN_SOCIAL_ID_PREFIX = "withdrawn-";
+    private static final String WITHDRAWN_NICKNAME = "탈퇴한 사용자";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -102,5 +106,27 @@ public class User extends BaseEntity {
 
     public void updateFcmToken(String fcmToken) {
         this.fcmToken = fcmToken;
+    }
+
+    // 탈퇴: 행은 남겨 남이 보는 참가·리뷰·채팅 이력을 지키고, 개인정보와 나만 보는 데이터만 지운다
+    public void withdraw() {
+        this.socialId = WITHDRAWN_SOCIAL_ID_PREFIX + this.id;
+        this.nickname = null;
+        this.imageUrl = "";
+        this.fcmToken = null;
+        this.userTags.clear();
+        this.wishlists.clear();
+        if (this.guideProfile != null) {
+            this.guideProfile.clearPersonalInfo();
+        }
+    }
+
+    public boolean isWithdrawn() {
+        return this.socialId.startsWith(WITHDRAWN_SOCIAL_ID_PREFIX);
+    }
+
+    // 남에게 보이는 닉네임. 탈퇴한 사용자는 "탈퇴한 사용자"로 보인다 (닉네임 컬럼은 unique라 비워 둔다)
+    public String getNickname() {
+        return isWithdrawn() ? WITHDRAWN_NICKNAME : this.nickname;
     }
 }

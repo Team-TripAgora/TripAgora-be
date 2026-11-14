@@ -61,6 +61,13 @@ public class GuideProfile extends BaseEntity {
         this.portfolios.addAll(newPortfolios);
     }
 
+    // 가이드 탈퇴: 소개·사진·포트폴리오를 지운다. 프로필 행과 평점은 템플릿·리뷰가 가리키므로 남긴다
+    public void clearPersonalInfo() {
+        this.bio = null;
+        this.imageUrl = null;
+        this.portfolios.clear();
+    }
+
     public void updateRating(double newAverage, int newReviewCount) {
         this.totalAvgRating = newAverage;
         this.totalReviewCount = newReviewCount;
