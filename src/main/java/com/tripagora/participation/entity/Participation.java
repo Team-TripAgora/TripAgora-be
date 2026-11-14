@@ -37,6 +37,10 @@ public class Participation extends BaseEntity {
     @Column
     private LocalDateTime lastChatReadAt;
 
+    // 완료된 여행을 내 목록에서 숨긴 시각 (비어 있으면 보인다). 참가 기록은 남는다
+    @Column
+    private LocalDateTime hiddenAt;
+
     @Builder
     public Participation(User user, Trip trip, Role role) {
         this.user = user;
@@ -49,6 +53,10 @@ public class Participation extends BaseEntity {
         if (this.role == Role.GUIDE) {
             throw new GuideCannotCancelParticipationException();
         }
+    }
+
+    public void hide() {
+        this.hiddenAt = LocalDateTime.now();
     }
 
     public void updateLastReadAt() {

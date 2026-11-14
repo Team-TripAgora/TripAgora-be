@@ -75,16 +75,15 @@ public class ParticipationService {
                 .orElseThrow(ParticipationNotFoundException::new);
 
         participation.validateCancellable();
-        validateTripStatus(trip);
 
+        // 완료된 여행은 참가 기록을 남기고 내 목록에서만 숨긴다 (다른 참가자가 보는 이력과 인원은 그대로)
+        if (trip.isCompleted()) {
+            participation.hide();
+            return;
+        }
+
+        trip.validateCancellable();
         trip.decreaseParticipant();
         participationRepository.delete(participation);
-    }
-
-    private void validateTripStatus(Trip trip) {
-        if (trip.getStatus() != TripStatus.RECRUITING &&
-            trip.getStatus() != TripStatus.COMPLETED) {
-            throw new ParticipationCancelNotAllowedException();
-        }
     }
 }

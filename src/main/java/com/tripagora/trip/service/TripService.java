@@ -221,9 +221,9 @@ public class TripService {
 
         Slice<Participation> participationSlice;
         if (statuses == null || statuses.isEmpty()) {
-            participationSlice = participationRepository.findByUserAndRole(user, Role.TRAVELER, pageable);
+            participationSlice = participationRepository.findByUserAndRoleAndHiddenAtIsNull(user, Role.TRAVELER, pageable);
         } else {
-            participationSlice = participationRepository.findByUserAndRoleAndTrip_StatusIn(user, Role.TRAVELER, statuses, pageable);
+            participationSlice = participationRepository.findByUserAndRoleAndHiddenAtIsNullAndTrip_StatusIn(user, Role.TRAVELER, statuses, pageable);
         }
 
         Slice<Trip> tripSlice = participationSlice.map(Participation::getTrip);
@@ -235,7 +235,7 @@ public class TripService {
     public CompletedTripListResponse getCompletedTrips(long userId, Pageable pageable) {
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
-        Slice<Participation> participationSlice = participationRepository.findByUserAndRoleAndTrip_Status(
+        Slice<Participation> participationSlice = participationRepository.findByUserAndRoleAndHiddenAtIsNullAndTrip_Status(
                 user,
                 Role.TRAVELER,
                 TripStatus.COMPLETED,

@@ -13,7 +13,10 @@ import org.springframework.test.web.servlet.ResultActions;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -115,6 +118,31 @@ class ParticipationTest extends IntegrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM participation WHERE trip_id = ? AND role = 'GUIDE'", Integer.class, TRIP))
                 .isEqualTo(1);
         assertThat(currentParticipants()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("완료된 여행의 참가를 취소하면 기록과 인원은 그대로 두고 내 목록에서만 숨긴다")
+    void hidesCompletedTripInsteadOfDeletingParticipation() throws Exception {
+        trip(TripStatus.COMPLETED, today.minusDays(10));
+        travelerJoined();
+        // 숨기지 않은 다른 완료 여행
+        fixture.trip(2L, TEMPLATE, TripStatus.COMPLETED, today.minusDays(20), today.minusDays(20));
+        fixture.participation(3L, 2L, TRAVELER, Role.TRAVELER);
+
+        cancel().andExpect(status().isOk());
+
+        assertThat(travelerParticipations()).isEqualTo(1);
+        assertThat(currentParticipants()).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT hidden_at IS NOT NULL FROM participation WHERE id = 2", Boolean.class)).isTrue();
+
+        mockMvc.perform(get("/api/trips/completed").header("Authorization", bearer(TRAVELER, Role.TRAVELER)))
+                .andExpect(jsonPath("$.data.trips[*].tripId", contains(2)));
+        mockMvc.perform(get("/api/trips/participating").header("Authorization", bearer(TRAVELER, Role.TRAVELER)))
+                .andExpect(jsonPath("$.data.trips[*].tripId", contains(2)));
+        // 다른 사람이 보는 여행 상세에는 참가자로 남는다
+        mockMvc.perform(get("/api/trips/" + TRIP).header("Authorization", bearer(GUIDE, Role.GUIDE)))
+                .andExpect(jsonPath("$.data.participants[*].userId", hasItem((int) TRAVELER)))
+                .andExpect(jsonPath("$.data.currentParticipants").value(1));
     }
 
     // 하루짜리 여행 (가이드는 참가 행이 있지만 인원 수에는 들어가지 않는다)

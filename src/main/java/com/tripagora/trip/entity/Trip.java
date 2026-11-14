@@ -4,6 +4,7 @@ import com.tripagora.common.entity.BaseEntity;
 import com.tripagora.itinerary.entity.Itineraries;
 import com.tripagora.itinerary.entity.Itinerary;
 import com.tripagora.participation.entity.Participation;
+import com.tripagora.participation.exception.ParticipationCancelNotAllowedException;
 import com.tripagora.review.entity.Review;
 import com.tripagora.room.entity.Room;
 import com.tripagora.trip.exception.TripAlreadyEndedException;
@@ -139,6 +140,13 @@ public class Trip extends BaseEntity {
     public void validateJoinable() {
         if (this.status != TripStatus.RECRUITING) {
             throw new TripNotRecruitingException();
+        }
+    }
+
+    // 참가 취소(참가 기록 삭제)는 모집 중에만. 완료된 여행은 취소 대신 숨긴다
+    public void validateCancellable() {
+        if (this.status != TripStatus.RECRUITING) {
+            throw new ParticipationCancelNotAllowedException();
         }
     }
 
