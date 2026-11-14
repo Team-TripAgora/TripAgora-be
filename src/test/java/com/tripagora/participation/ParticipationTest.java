@@ -24,6 +24,7 @@ class ParticipationTest extends IntegrationTest {
     private static final long TRAVELER = 2L;
     private static final long TEMPLATE = 1L;
     private static final long TRIP = 1L;
+    private static final String NOT_RECRUITING_MESSAGE = "인원을 모집중인 여행이 아닙니다.";
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -67,9 +68,24 @@ class ParticipationTest extends IntegrationTest {
     void cannotApplyForClosedTrip() throws Exception {
         trip(TripStatus.RECRUITMENT_CLOSED, today.plusDays(10));
 
-        apply().andExpect(status().isBadRequest());
+        apply()
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(NOT_RECRUITING_MESSAGE));
 
         assertThat(travelerParticipations()).isZero();
+    }
+
+    @Test
+    @DisplayName("완료된 여행에는 신청할 수 없다")
+    void cannotApplyForCompletedTrip() throws Exception {
+        trip(TripStatus.COMPLETED, today.minusDays(10));
+
+        apply()
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(NOT_RECRUITING_MESSAGE));
+
+        assertThat(travelerParticipations()).isZero();
+        assertThat(currentParticipants()).isZero();
     }
 
     @Test

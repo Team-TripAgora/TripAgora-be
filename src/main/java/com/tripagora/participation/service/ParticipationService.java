@@ -28,7 +28,7 @@ public class ParticipationService {
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
         Trip trip = tripRepository.findById(tripId).orElseThrow(TripNotFoundException::new);
 
-        validateTripStatus(trip);
+        trip.validateJoinable();
 
         if (trip.getTemplate().getGuideProfile().getUser().getId().equals(userId)) {
             throw new CannotParticipateInOwnTripException();

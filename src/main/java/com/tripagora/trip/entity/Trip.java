@@ -135,6 +135,13 @@ public class Trip extends BaseEntity {
         this.status = TripStatus.COMPLETED;
     }
 
+    // 참가 신청은 모집 중에만
+    public void validateJoinable() {
+        if (this.status != TripStatus.RECRUITING) {
+            throw new TripNotRecruitingException();
+        }
+    }
+
     public boolean isCompleted() {
         return this.status == TripStatus.COMPLETED;
     }
