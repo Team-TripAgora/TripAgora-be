@@ -249,7 +249,10 @@ public class TemplateService {
     @Transactional
     public void deleteTemplate(long userId, long templateId) {
         Template template = findTemplateAndVerifyOwner(userId, templateId);
-        verifyNoActiveTrips(templateId);
+        // 여행을 한 번이라도 연 템플릿은 지우지 않는다. 지우면 그 여행의 참가·리뷰·채팅 이력이 함께 사라진다 (완료된 여행 포함)
+        if (tripRepository.existsByTemplate_Id(templateId)) {
+            throw new TemplateHasActiveTripsException();
+        }
 
         templateRepository.delete(template);
     }
