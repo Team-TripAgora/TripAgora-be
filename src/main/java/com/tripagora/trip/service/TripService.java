@@ -15,7 +15,6 @@ import com.tripagora.trip.dto.request.TripSearchRequest;
 import com.tripagora.trip.dto.request.TripUpdateRequest;
 import com.tripagora.trip.dto.response.*;
 import com.tripagora.trip.entity.Trip;
-import com.tripagora.trip.entity.TripItinerary;
 import com.tripagora.trip.entity.TripStatus;
 import com.tripagora.trip.exception.*;
 import com.tripagora.trip.repository.TripRepository;
@@ -85,19 +84,7 @@ public class TripService {
                 .startDate(request.startDate())
                 .build();
 
-        List<TripItinerary> tripItineraries = template.getTemplateItineraries().stream()
-                .map(templateItinerary -> TripItinerary.builder()
-                        .trip(trip)
-                        .day(templateItinerary.getDay())
-                        .location(templateItinerary.getLocation())
-                        .content(templateItinerary.getContent())
-                        .startTime(templateItinerary.getStartTime())
-                        .latitude(templateItinerary.getLatitude())
-                        .longitude(templateItinerary.getLongitude())
-                        .build())
-                .toList();
-
-        tripItineraries.forEach(trip::addItinerary);
+        trip.copyItinerariesFrom(template);
 
         Trip savedTrip = tripRepository.save(trip);
 
@@ -306,15 +293,8 @@ public class TripService {
     public ItinerariesResponse getItineraries(long tripId) {
         Trip trip = tripRepository.findById(tripId).orElseThrow(TripNotFoundException::new);
 
-        List<ItineraryItemResponse> itineraries = trip.getTripItineraries().stream()
-                .map(itinerary -> new ItineraryItemResponse(
-                        itinerary.getId(),
-                        itinerary.getDay(),
-                        itinerary.getLocation(),
-                        itinerary.getContent(),
-                        itinerary.getStartTime(),
-                        itinerary.getLatitude(),
-                        itinerary.getLongitude()))
+        List<ItineraryItemResponse> itineraries = trip.getItineraries().stream()
+                .map(ItineraryItemResponse::from)
                 .toList();
 
         return new ItinerariesResponse(itineraries);
@@ -380,7 +360,7 @@ public class TripService {
         }
 
         trip.clearItineraries();
-        request.itineraries().forEach(item -> trip.addItinerary(item.toTripItinerary(trip)));
+        request.itineraries().forEach(item -> trip.addItinerary(item.toItinerary()));
     }
 
     private Trip findTripAndVerifyOwner(long userId, long tripId) {

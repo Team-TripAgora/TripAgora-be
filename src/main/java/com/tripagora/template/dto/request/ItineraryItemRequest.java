@@ -1,9 +1,6 @@
 package com.tripagora.template.dto.request;
 
-import com.tripagora.template.entity.Template;
-import com.tripagora.template.entity.TemplateItinerary;
-import com.tripagora.trip.entity.Trip;
-import com.tripagora.trip.entity.TripItinerary;
+import com.tripagora.itinerary.entity.Itinerary;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -29,21 +26,9 @@ public record ItineraryItemRequest(
         @NotNull(message = "경도는 필수입니다.")
         Double longitude) {
 
-    public TemplateItinerary toTemplateItinerary(Template template) {
-        return TemplateItinerary.builder()
-                .template(template)
-                .day(day)
-                .location(location)
-                .content(content)
-                .startTime(startTime)
-                .latitude(latitude)
-                .longitude(longitude)
-                .build();
-    }
-
-    public TripItinerary toTripItinerary(Trip trip) {
-        return TripItinerary.builder()
-                .trip(trip)
+    // 주인(템플릿·여행)은 목록에 넣을 때 정해진다
+    public Itinerary toItinerary() {
+        return Itinerary.builder()
                 .day(day)
                 .location(location)
                 .content(content)

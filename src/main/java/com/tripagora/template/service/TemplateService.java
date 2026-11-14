@@ -128,15 +128,8 @@ public class TemplateService {
     public ItinerariesResponse getItineraries(long userId, long templateId) {
         Template template = findTemplateAndVerifyOwner(userId, templateId);
 
-        List<ItineraryItemResponse> itineraries = template.getTemplateItineraries().stream()
-                .map(itinerary -> new ItineraryItemResponse(
-                        itinerary.getId(),
-                        itinerary.getDay(),
-                        itinerary.getLocation(),
-                        itinerary.getContent(),
-                        itinerary.getStartTime(),
-                        itinerary.getLatitude(),
-                        itinerary.getLongitude()))
+        List<ItineraryItemResponse> itineraries = template.getItineraries().stream()
+                .map(ItineraryItemResponse::from)
                 .toList();
 
         return new ItinerariesResponse(itineraries);
@@ -274,7 +267,7 @@ public class TemplateService {
         }
 
         template.clearItineraries();
-        request.itineraries().forEach(item -> template.addItinerary(item.toTemplateItinerary(template)));
+        request.itineraries().forEach(item -> template.addItinerary(item.toItinerary()));
     }
 
     @Transactional

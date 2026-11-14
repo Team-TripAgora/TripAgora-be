@@ -36,7 +36,7 @@ public class TestFixture {
         jdbcTemplate.update("INSERT INTO template (id, created_at, modified_at, avg_rating, content, review_count, title, guide_profile_id) " +
                 "VALUES (?, NOW(6), NOW(6), 0, '테스트 플랜 소개', 0, ?, ?)", id, "플랜" + id, guideProfileId);
         for (int day = 1; day <= days; day++) {
-            jdbcTemplate.update("INSERT INTO template_itinerary (created_at, modified_at, content, day, latitude, location, longitude, start_time, template_id) " +
+            jdbcTemplate.update("INSERT INTO itinerary (created_at, modified_at, content, day, latitude, location, longitude, start_time, template_id) " +
                     "VALUES (NOW(6), NOW(6), ?, ?, 37.5, ?, 127.0, '10:00:00', ?)", day + "일차", day, "장소" + day, id);
         }
     }
@@ -46,9 +46,9 @@ public class TestFixture {
                 "VALUES (?, NOW(6), NOW(6), 0, ?, ?, 4, ?, ?)", id, startDate, endDate, status.name(), templateId);
     }
 
-    // 여행 일정 (여행을 개설할 때 템플릿 일정을 복사해 두는 테이블)
+    // 여행 일정 (여행을 개설할 때 템플릿 일정을 복사해 여행이 따로 갖는 행)
     public void tripItinerary(long tripId, int day) {
-        jdbcTemplate.update("INSERT INTO trip_itinerary (created_at, modified_at, content, day, latitude, location, longitude, start_time, trip_id) " +
+        jdbcTemplate.update("INSERT INTO itinerary (created_at, modified_at, content, day, latitude, location, longitude, start_time, trip_id) " +
                 "VALUES (NOW(6), NOW(6), ?, ?, 37.5, ?, 127.0, '10:00:00', ?)", day + "일차", day, "장소" + day, tripId);
     }
 

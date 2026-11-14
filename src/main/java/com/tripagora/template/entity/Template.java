@@ -2,6 +2,7 @@ package com.tripagora.template.entity;
 
 import com.tripagora.common.entity.BaseEntity;
 import com.tripagora.guideprofile.entity.GuideProfile;
+import com.tripagora.itinerary.entity.Itinerary;
 import com.tripagora.region.entity.Region;
 import com.tripagora.region.entity.TemplateRegion;
 import com.tripagora.review.entity.Review;
@@ -46,7 +47,7 @@ public class Template extends BaseEntity {
 
     @OrderBy("day ASC , startTime ASC ")
     @OneToMany(mappedBy = "template", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<TemplateItinerary> templateItineraries = new ArrayList<>();
+    private List<Itinerary> itineraries = new ArrayList<>();
 
     @OneToMany(mappedBy = "template", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TemplateTag> templateTags = new ArrayList<>();
@@ -99,11 +100,12 @@ public class Template extends BaseEntity {
     }
 
     public void clearItineraries() {
-        this.templateItineraries.clear();
+        this.itineraries.clear();
     }
 
-    public void addItinerary(TemplateItinerary itinerary) {
-        this.templateItineraries.add(itinerary);
+    public void addItinerary(Itinerary itinerary) {
+        itinerary.assignTo(this);
+        this.itineraries.add(itinerary);
     }
 
     // 태그를 tags로 바꾼다. 남는 태그는 그대로 두고, 빠진 태그는 컬렉션에서 빼고(orphanRemoval로 삭제), 새 태그만 추가한다
