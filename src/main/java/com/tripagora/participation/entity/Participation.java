@@ -59,11 +59,11 @@ public class Participation extends BaseEntity {
         }
     }
 
-    public void hide() {
-        this.hiddenAt = LocalDateTime.now();
+    public void hide(LocalDateTime now) {
+        this.hiddenAt = now;
     }
 
-    public void updateLastReadAt() {
-        this.lastChatReadAt = LocalDateTime.now();
+    public void updateLastReadAt(LocalDateTime now) {
+        this.lastChatReadAt = now;
     }
 }
