@@ -319,10 +319,7 @@ public class TripService {
         Trip trip = lockTripAndVerifyOwner(userId, tripId);
         trip.closeRecruitment(LocalDate.now(clock));
 
-        Room room = Room.builder()
-                .trip(trip)
-                .build();
-        roomRepository.save(room);
+        Room room = roomRepository.save(Room.create());
         trip.assignRoom(room);
     }
 
