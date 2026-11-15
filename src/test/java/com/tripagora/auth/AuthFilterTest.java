@@ -73,6 +73,14 @@ class AuthFilterTest extends IntegrationTest {
                 .andExpect(jsonPath("$.data.accessToken").isString());
     }
 
+    @Test
+    @DisplayName("역할이 맞지 않아 막히면 공통 응답 형식의 403")
+    void respondsForbiddenInCommonFormat() throws Exception {
+        mockMvc.perform(post("/api/trips").header("Authorization", bearer(USER, Role.TRAVELER)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.message").value("권한이 없습니다."));
+    }
+
     private String refreshToken(long userId) {
         return jwtUtil.createToken(userId, Role.TRAVELER.name(), TokenType.REFRESH);
     }
