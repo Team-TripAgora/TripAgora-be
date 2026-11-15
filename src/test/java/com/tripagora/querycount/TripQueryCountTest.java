@@ -117,7 +117,8 @@ class TripQueryCountTest extends QueryCountTest {
     @ParameterizedTest(name = "{displayName}: 여행 {0}건 → 쿼리 {1}개, 엔티티 {2}개")
     // 여행·사진·지역을 id로 묶어서 불러와 고정 개수가 되고, 여행마다 '내 리뷰' 조회 1개만 남는다 (#176 배치 크기. 쿼리 메서드 호출이라 배치로 묶이지 않음)
     // 여행을 읽을 때 채팅방을 함께 불러오지 않는다 (#176 채팅방 외래 키, 엔티티 −여행 수)
-    @CsvSource({"5, 10, 39", "10, 15, 76"})
+    // 내 리뷰를 여행 id 목록으로 한 번에 읽는다 (#176, 쿼리 −여행 수 +1)
+    @CsvSource({"5, 6, 39", "10, 6, 76"})
     @DisplayName("완료 여행 목록 (홀수 번째 여행만 리뷰 작성)")
     void completedTrips(int trips, long queries, long entities) throws Exception {
         for (long id = 1; id <= trips; id++) {
@@ -138,7 +139,8 @@ class TripQueryCountTest extends QueryCountTest {
     @ParameterizedTest(name = "{displayName}: 참가자 {0}명 → 쿼리 {1}개, 엔티티 {2}개")
     // 참가자의 사용자를 id로 묶어서 불러와 고정 개수 (#176 배치 크기)
     // 여행을 읽을 때 채팅방을 함께 불러오지 않는다 (#176 채팅방 외래 키, 엔티티 −1. 채팅방 id는 외래 키 값으로)
-    @CsvSource({"2, 10, 14", "4, 10, 18"})
+    // 참가 여부를 이미 불러온 참가자 목록으로 확인한다 (#176, 쿼리 −1)
+    @CsvSource({"2, 9, 14", "4, 9, 18"})
     @DisplayName("여행 상세 (모집 마감, 가이드 포함 참가자)")
     void tripDetail(int participants, long queries, long entities) throws Exception {
         tripWithOwnTemplate(1L, GUIDE, TripStatus.RECRUITMENT_CLOSED);

@@ -17,9 +17,7 @@ import java.util.Optional;
 
 @Repository
 public interface ParticipationRepository extends JpaRepository<Participation, Long> {
-    // TODO: 두 메서드 합치기?
     Optional<Participation> findByUser_IdAndTrip_Id(long userId, long tripId);
-    boolean existsByUser_IdAndTrip_Id(long userId, long tripId);
     boolean existsByUser_IdAndTrip_StatusIn(long userId, List<TripStatus> statuses);
 
     // 내 여행 목록 3개: 숨긴 참가(완료 여행을 목록에서 지운 것)는 뺀다
