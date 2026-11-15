@@ -41,7 +41,8 @@ class ReviewQueryCountTest extends QueryCountTest {
 
     @ParameterizedTest(name = "{displayName}: 리뷰 {0}건 → 쿼리 {1}개, 엔티티 {2}개")
     // 리뷰 제목을 리뷰한 여행의 사본에서 읽어 여행을 한 번 불러온다 (#174, 쿼리 +1, 엔티티 +2)
-    @CsvSource({"5, 8, 13", "10, 13, 23"})
+    // 작성자·리뷰한 여행을 id로 묶어서 불러와 고정 개수 (#176 배치 크기)
+    @CsvSource({"5, 4, 13", "10, 4, 23"})
     @DisplayName("템플릿 리뷰 목록 (작성자 모두 다름)")
     void templateReviews(int reviews, long queries, long entities) throws Exception {
         reviewsByOtherTravelers(reviews);

@@ -49,7 +49,8 @@ class ChatLocationQueryCountTest extends QueryCountTest {
     }
 
     @ParameterizedTest(name = "{displayName}: 보낸 사람 {0}명 → 쿼리 {1}개, 엔티티 {2}개")
-    @CsvSource({"2, 5, 35", "4, 7, 37"})
+    // 보낸 사람을 id로 묶어서 불러와 고정 개수 (#176 배치 크기)
+    @CsvSource({"2, 4, 35", "4, 4, 37"})
     @DisplayName("채팅 이력 (메시지 30건)")
     void chatHistory(int senders, long queries, long entities) throws Exception {
         travelersUpTo(senders);
@@ -97,7 +98,8 @@ class ChatLocationQueryCountTest extends QueryCountTest {
     }
 
     @ParameterizedTest(name = "{displayName}: 위치 {0}명 → 쿼리 {1}개, 엔티티 {2}개")
-    @CsvSource({"2, 5, 7", "4, 7, 11"})
+    // 위치의 사용자를 id로 묶어서 불러와 고정 개수 (#176 배치 크기)
+    @CsvSource({"2, 4, 7", "4, 4, 11"})
     @DisplayName("위치 목록")
     void roomLocations(int participants, long queries, long entities) throws Exception {
         travelersUpTo(participants);

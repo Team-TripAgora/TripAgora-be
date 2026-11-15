@@ -6,3 +6,7 @@ spring:
   # 영속성 컨텍스트를 서비스 트랜잭션 안에서만 연다 (컨트롤러·응답 변환에서 지연 로딩 금지)
   jpa:
     open-in-view: false
+    properties:
+      hibernate:
+        # 지연 로딩하는 연관 엔티티·컬렉션을 건마다 따로 조회하지 않고 IN 조건으로 최대 100개씩 묶어서 불러온다 (N+1 방지)
+        default_batch_fetch_size: 100

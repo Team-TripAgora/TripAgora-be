@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.assertThat;
 
 // 쿼리 수 기준선 테스트의 공통 부분. 동작 한 번에 실행된 SQL 수와 DB에서 불러온 엔티티 수를 잰다
-// 숫자는 SQL 최적화 전 값이다. 쿼리 수가 바뀌는 변경을 하면 이유를 확인하고 숫자를 고친다
+// 숫자는 지금 코드의 값이다. 쿼리 수가 바뀌는 변경을 하면 이유를 확인하고 숫자와 이유 주석을 고친다 (최적화 전 값은 3단계 #150 보고서)
 abstract class QueryCountTest extends IntegrationTest {
     protected final LocalDate today = today();
 
