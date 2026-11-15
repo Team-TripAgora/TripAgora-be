@@ -19,8 +19,8 @@ public class Room extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "trip_id")
+    // 외래 키는 여행 쪽(trip.room_id)에 있다
+    @OneToOne(mappedBy = "room")
     private Trip trip;
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)

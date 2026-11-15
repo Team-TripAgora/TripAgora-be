@@ -38,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -134,7 +135,9 @@ public class TripService {
         User guide = guideProfile.getUser();
         Long roomId = (trip.getRoom() == null) ? null : trip.getRoom().getId();
 
-        boolean isParticipating = participationRepository.existsByUser_IdAndTrip_Id(userId, tripId);
+        // 참가 여부는 위에서 불러온 참가자 목록으로 확인한다 (따로 조회하지 않음)
+        boolean isParticipating = trip.getParticipants().stream()
+                .anyMatch(participation -> Objects.equals(participation.getUser().getId(), userId));
         boolean isMyTrip = Objects.equals(guide.getId(), userId);
         boolean isInWishlist = wishlistRepository.existsByUser_IdAndTrip_Id(userId, tripId);
         Long reviewId = reviewRepository.findByAuthor_IdAndTrip_Id(userId, tripId)
@@ -218,7 +221,7 @@ public class TripService {
             tripSlice = tripRepository.findByTemplate_GuideProfileAndStatusIn(guideProfile, statuses, pageable);
         }
 
-        return getTripListResponse(tripSlice);
+        return TripListResponse.from(tripSlice);
     }
 
     @Transactional(readOnly = true)
@@ -234,7 +237,7 @@ public class TripService {
 
         Slice<Trip> tripSlice = participationSlice.map(Participation::getTrip);
 
-        return getTripListResponse(tripSlice);
+        return TripListResponse.from(tripSlice);
     }
 
     @Transactional(readOnly = true)
@@ -248,6 +251,8 @@ public class TripService {
                 pageable
         );
 
+        Map<Long, Long> myReviewIdByTripId = findMyReviewIdByTripId(userId, participationSlice.getContent());
+
         List<CompletedTripResponse> completedTrips = participationSlice.getContent().stream()
                 .map(participation -> {
                     Trip trip = participation.getTrip();
@@ -260,9 +265,7 @@ public class TripService {
                             .toList();
 
                     Long roomId = (trip.getRoom() == null) ? null : trip.getRoom().getId();
-                    Long reviewId = reviewRepository.findByAuthor_IdAndTrip_Id(userId, trip.getId())
-                            .map(Review::getId)
-                            .orElse(null);
+                    Long reviewId = myReviewIdByTripId.get(trip.getId());
                     boolean hasWrittenReview = reviewId != null;
 
                     return new CompletedTripResponse(
@@ -283,6 +286,20 @@ public class TripService {
                 .toList();
 
         return new CompletedTripListResponse(completedTrips, participationSlice.hasNext());
+    }
+
+    // 목록에 있는 여행들에 내가 쓴 리뷰를 한 번에 읽어 여행 id → 리뷰 id로 둔다 (여행마다 조회하지 않음)
+    private Map<Long, Long> findMyReviewIdByTripId(long userId, List<Participation> participations) {
+        if (participations.isEmpty()) {
+            return Map.of();
+        }
+
+        List<Long> tripIds = participations.stream()
+                .map(participation -> participation.getTrip().getId())
+                .toList();
+
+        return reviewRepository.findByAuthor_IdAndTrip_IdIn(userId, tripIds).stream()
+                .collect(Collectors.toMap(review -> review.getTrip().getId(), Review::getId));
     }
 
     @Transactional(readOnly = true)
@@ -313,7 +330,7 @@ public class TripService {
     public TripListResponse searchTrips(TripSearchRequest request, Pageable pageable) {
         Slice<Trip> tripSlice = tripRepository.search(request, pageable);
 
-        return getTripListResponse(tripSlice);
+        return TripListResponse.from(tripSlice);
     }
 
     @Transactional
@@ -339,34 +356,5 @@ public class TripService {
         }
 
         return trip;
-    }
-
-    public static TripListResponse getTripListResponse(Slice<Trip> tripSlice) {
-        List<TripSummaryResponse> summaries = tripSlice.getContent().stream()
-                .map(trip -> {
-                    String imageUrl = trip.getImages().isEmpty() ? null : trip.getImages().get(0).getImageUrl();
-
-                    List<Long> regions = trip.getRegions().stream()
-                            .map(tripRegion -> tripRegion.getRegion().getId())
-                            .toList();
-
-                    Long roomId = (trip.getRoom() == null) ? null : trip.getRoom().getId();
-
-                    return new TripSummaryResponse(
-                            trip.getId(),
-                            trip.getTitle(),
-                            imageUrl,
-                            regions,
-                            trip.getMaxParticipants(),
-                            trip.getCurrentParticipants(),
-                            trip.getStartDate(),
-                            trip.getEndDate(),
-                            trip.getStatus().name(),
-                            roomId
-                    );
-                })
-                .toList();
-
-        return new TripListResponse(summaries, tripSlice.hasNext());
     }
 }

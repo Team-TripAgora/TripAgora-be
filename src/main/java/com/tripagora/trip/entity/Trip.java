@@ -79,7 +79,10 @@ public class Trip extends BaseEntity {
     @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Participation> participants = new ArrayList<>();
 
-    @OneToOne(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+    // 외래 키(room_id)를 여행이 갖는다. 여행 행만 읽어도 채팅방 유무와 id를 알 수 있어 지연 로딩이 된다
+    // (채팅방 쪽이 외래 키를 가지면 JPA가 여행을 읽을 때마다 채팅방을 따로 조회해야 한다)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "room_id", unique = true)
     private Room room;
 
     @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)

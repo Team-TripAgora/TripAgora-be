@@ -51,7 +51,7 @@ class TripStatusTransitionTest extends IntegrationTest {
         closeRecruitment(1L).andExpect(status().isOk());
 
         assertThat(statusOf(1L)).isEqualTo(TripStatus.IN_PROGRESS.name());
-        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM room WHERE trip_id = 1", Integer.class)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM trip t JOIN room r ON r.id = t.room_id WHERE t.id = 1", Integer.class)).isEqualTo(1);
     }
 
     @Test

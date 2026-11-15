@@ -41,7 +41,9 @@ class ReviewQueryCountTest extends QueryCountTest {
 
     @ParameterizedTest(name = "{displayName}: 리뷰 {0}건 → 쿼리 {1}개, 엔티티 {2}개")
     // 리뷰 제목을 리뷰한 여행의 사본에서 읽어 여행을 한 번 불러온다 (#174, 쿼리 +1, 엔티티 +2)
-    @CsvSource({"5, 8, 13", "10, 13, 23"})
+    // 작성자·리뷰한 여행을 id로 묶어서 불러와 고정 개수 (#176 배치 크기)
+    // 리뷰한 여행을 읽을 때 채팅방을 함께 불러오지 않는다 (#176 채팅방 외래 키, 엔티티 −1)
+    @CsvSource({"5, 4, 12", "10, 4, 22"})
     @DisplayName("템플릿 리뷰 목록 (작성자 모두 다름)")
     void templateReviews(int reviews, long queries, long entities) throws Exception {
         reviewsByOtherTravelers(reviews);
@@ -55,7 +57,8 @@ class ReviewQueryCountTest extends QueryCountTest {
     }
 
     @ParameterizedTest(name = "{displayName}: 기존 리뷰 {0}건, 가이드 템플릿 {1}개 → 쿼리 {2}개, 엔티티 {3}개")
-    @CsvSource({"5, 2, 11, 12", "10, 4, 11, 19"})
+    // 리뷰할 여행을 읽을 때 채팅방을 함께 불러오지 않는다 (#176 채팅방 외래 키, 엔티티 −1)
+    @CsvSource({"5, 2, 11, 11", "10, 4, 11, 18"})
     @DisplayName("리뷰 작성 (템플릿·가이드 평점 재계산)")
     void createReview(int existingReviews, int guideTemplates, long queries, long entities) throws Exception {
         reviewsByOtherTravelers(existingReviews);
