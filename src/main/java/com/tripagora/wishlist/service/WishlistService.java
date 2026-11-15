@@ -5,7 +5,6 @@ import com.tripagora.trip.dto.response.TripListResponse;
 import com.tripagora.trip.entity.Trip;
 import com.tripagora.trip.exception.TripNotFoundException;
 import com.tripagora.trip.repository.TripRepository;
-import com.tripagora.trip.service.TripService;
 import com.tripagora.user.entity.User;
 import com.tripagora.user.exception.UserNotFoundException;
 import com.tripagora.user.repository.UserRepository;
@@ -70,6 +69,6 @@ public class WishlistService {
         Slice<Wishlist> wishlistSlice = wishlistRepository.findByUser(user, pageable);
         Slice<Trip> tripSlice = wishlistSlice.map(Wishlist::getTrip);
 
-        return TripService.getTripListResponse(tripSlice);
+        return TripListResponse.from(tripSlice);
     }
 }

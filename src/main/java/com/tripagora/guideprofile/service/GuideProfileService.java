@@ -17,7 +17,6 @@ import com.tripagora.trip.dto.response.TripListResponse;
 import com.tripagora.trip.entity.Trip;
 import com.tripagora.trip.entity.TripStatus;
 import com.tripagora.trip.repository.TripRepository;
-import com.tripagora.trip.service.TripService;
 import com.tripagora.user.dto.response.GuideSwitchResponse;
 import com.tripagora.user.dto.response.TravelerSwitchResponse;
 import com.tripagora.user.entity.Role;
@@ -116,7 +115,7 @@ public class GuideProfileService {
         statuses.add(TripStatus.RECRUITING);
         Slice<Trip> tripSlice = tripRepository.findByTemplate_GuideProfileAndStatusIn(guideProfile, statuses, pageable);
 
-        TripListResponse tripListResponse = TripService.getTripListResponse(tripSlice);
+        TripListResponse tripListResponse = TripListResponse.from(tripSlice);
 
         return new GuideProfileDetailResponse(
                 user.getNickname(),

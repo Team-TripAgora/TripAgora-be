@@ -12,7 +12,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-// 여행 목록(같은 매핑 getTripListResponse를 쓰는 5개 API), 완료 여행 목록, 여행 상세의 쿼리 수 기준선
+// 여행 목록(같은 매핑 TripListResponse.from을 쓰는 5개 API), 완료 여행 목록, 여행 상세의 쿼리 수 기준선
 class TripQueryCountTest extends QueryCountTest {
     private static final long GUIDE = 1L;
     private static final long TRAVELER = 2L;

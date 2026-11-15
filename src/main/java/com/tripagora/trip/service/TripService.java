@@ -218,7 +218,7 @@ public class TripService {
             tripSlice = tripRepository.findByTemplate_GuideProfileAndStatusIn(guideProfile, statuses, pageable);
         }
 
-        return getTripListResponse(tripSlice);
+        return TripListResponse.from(tripSlice);
     }
 
     @Transactional(readOnly = true)
@@ -234,7 +234,7 @@ public class TripService {
 
         Slice<Trip> tripSlice = participationSlice.map(Participation::getTrip);
 
-        return getTripListResponse(tripSlice);
+        return TripListResponse.from(tripSlice);
     }
 
     @Transactional(readOnly = true)
@@ -313,7 +313,7 @@ public class TripService {
     public TripListResponse searchTrips(TripSearchRequest request, Pageable pageable) {
         Slice<Trip> tripSlice = tripRepository.search(request, pageable);
 
-        return getTripListResponse(tripSlice);
+        return TripListResponse.from(tripSlice);
     }
 
     @Transactional
@@ -339,34 +339,5 @@ public class TripService {
         }
 
         return trip;
-    }
-
-    public static TripListResponse getTripListResponse(Slice<Trip> tripSlice) {
-        List<TripSummaryResponse> summaries = tripSlice.getContent().stream()
-                .map(trip -> {
-                    String imageUrl = trip.getImages().isEmpty() ? null : trip.getImages().get(0).getImageUrl();
-
-                    List<Long> regions = trip.getRegions().stream()
-                            .map(tripRegion -> tripRegion.getRegion().getId())
-                            .toList();
-
-                    Long roomId = (trip.getRoom() == null) ? null : trip.getRoom().getId();
-
-                    return new TripSummaryResponse(
-                            trip.getId(),
-                            trip.getTitle(),
-                            imageUrl,
-                            regions,
-                            trip.getMaxParticipants(),
-                            trip.getCurrentParticipants(),
-                            trip.getStartDate(),
-                            trip.getEndDate(),
-                            trip.getStatus().name(),
-                            roomId
-                    );
-                })
-                .toList();
-
-        return new TripListResponse(summaries, tripSlice.hasNext());
     }
 }
