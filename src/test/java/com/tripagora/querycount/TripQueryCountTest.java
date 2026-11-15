@@ -12,7 +12,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-// 여행 목록(같은 매핑 getTripListResponse를 쓰는 5개 API)과 여행 상세의 쿼리 수 기준선
+// 여행 목록(같은 매핑 getTripListResponse를 쓰는 5개 API), 완료 여행 목록, 여행 상세의 쿼리 수 기준선
 class TripQueryCountTest extends QueryCountTest {
     private static final long GUIDE = 1L;
     private static final long TRAVELER = 2L;
@@ -101,6 +101,25 @@ class TripQueryCountTest extends QueryCountTest {
         Counts counts = measure(() -> mockMvc.perform(get("/api/guide-profiles/" + GUIDE).header("Authorization", bearer(TRAVELER, Role.TRAVELER)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.trips.trips", hasSize(trips))));
+
+        assertCounts(counts, queries, entities);
+    }
+
+    @ParameterizedTest(name = "{displayName}: 여행 {0}건 → 쿼리 {1}개, 엔티티 {2}개")
+    @CsvSource({"5, 22, 44", "10, 42, 86"})
+    @DisplayName("완료 여행 목록 (홀수 번째 여행만 리뷰 작성)")
+    void completedTrips(int trips, long queries, long entities) throws Exception {
+        for (long id = 1; id <= trips; id++) {
+            tripWithOwnTemplate(id, GUIDE, TripStatus.COMPLETED);
+            fixture.participation(id, id, TRAVELER, Role.TRAVELER);
+            if (id % 2 == 1) {
+                fixture.review(id, TRAVELER, id, id, GUIDE);
+            }
+        }
+
+        Counts counts = measure(() -> mockMvc.perform(get("/api/trips/completed").header("Authorization", bearer(TRAVELER, Role.TRAVELER)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.trips", hasSize(trips))));
 
         assertCounts(counts, queries, entities);
     }
