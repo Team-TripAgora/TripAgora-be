@@ -1,5 +1,6 @@
 package com.tripagora.auth.filter;
 
+import com.tripagora.auth.security.PublicPaths;
 import com.tripagora.auth.util.JWTUtil;
 import com.tripagora.common.code.AuthErrorCode;
 import com.tripagora.common.code.ResponseCode;
@@ -26,6 +27,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JWTFilter extends OncePerRequestFilter {
     private final JWTUtil jwtUtil;
+
+    // 로그인·재발급 등 인증이 필요 없는 요청은 토큰을 검사하지 않는다 (만료된 토큰이 붙어 와도 로그인이 되도록)
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return PublicPaths.matches(request);
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {

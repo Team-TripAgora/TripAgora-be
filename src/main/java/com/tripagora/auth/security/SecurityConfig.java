@@ -28,7 +28,7 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(authenticationEntryPoint))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login/**", "/api/auth/reissue", "/actuator/health", "/connect/**").permitAll()
+                        .requestMatchers(PublicPaths.PATTERNS).permitAll()
                         .requestMatchers("/api/guides/**", "api/templates/**").hasRole("GUIDE")
                         .requestMatchers(HttpMethod.GET, "/api/trips/**").authenticated()
                         .requestMatchers("/api/trips/**").hasRole("GUIDE")
