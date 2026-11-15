@@ -6,6 +6,8 @@ import com.tripagora.auth.entity.RefreshToken;
 import com.tripagora.auth.exception.RefreshTokenInvalidException;
 import com.tripagora.auth.repository.RefreshTokenRepository;
 import com.tripagora.auth.util.JWTUtil;
+import com.tripagora.auth.util.TokenClaims;
+import com.tripagora.auth.util.TokenType;
 import com.tripagora.user.entity.User;
 import com.tripagora.user.exception.UserNotFoundException;
 import com.tripagora.user.repository.UserRepository;
@@ -28,11 +30,9 @@ public class JWTService {
             throw new RefreshTokenInvalidException();
         }
 
-        if (!jwtUtil.isValid(refreshToken, false)) {
-            throw new RefreshTokenInvalidException();
-        }
-
-        long userId = jwtUtil.getUserId(refreshToken);
+        long userId = jwtUtil.parse(refreshToken, TokenType.REFRESH)
+                .map(TokenClaims::userId)
+                .orElseThrow(RefreshTokenInvalidException::new);
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
         return issueTokens(user);
@@ -46,8 +46,8 @@ public class JWTService {
         String role = user.getRole().name();
         long userId = user.getId();
 
-        String newAccessToken = jwtUtil.createToken(userId, role, true);
-        String newRefreshToken = jwtUtil.createToken(userId, role, false);
+        String newAccessToken = jwtUtil.createToken(userId, role, TokenType.ACCESS);
+        String newRefreshToken = jwtUtil.createToken(userId, role, TokenType.REFRESH);
 
         deleteRefreshTokenByUserId(userId);
         saveRefreshToken(user, newRefreshToken);
@@ -55,7 +55,7 @@ public class JWTService {
         return new ReissueResponse(newAccessToken, newRefreshToken);
     }
 
-    public void saveRefreshToken(User user, String token) {
+    private void saveRefreshToken(User user, String token) {
         RefreshToken refreshEntity = RefreshToken.builder()
                 .user(user)
                 .token(token)

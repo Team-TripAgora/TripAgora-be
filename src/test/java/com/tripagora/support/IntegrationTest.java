@@ -4,6 +4,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.google.firebase.FirebaseApp;
 import com.tripagora.common.config.TimeConfig;
 import com.tripagora.auth.util.JWTUtil;
+import com.tripagora.auth.util.TokenType;
 import com.tripagora.common.service.FcmService;
 import com.tripagora.user.entity.Role;
 import org.junit.jupiter.api.AfterEach;
@@ -70,6 +71,6 @@ public abstract class IntegrationTest {
     }
 
     protected String bearer(long userId, Role role) {
-        return "Bearer " + jwtUtil.createToken(userId, role.name(), true);
+        return "Bearer " + jwtUtil.createToken(userId, role.name(), TokenType.ACCESS);
     }
 }

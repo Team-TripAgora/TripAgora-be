@@ -16,6 +16,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
     private final JWTFilter jwtFilter;
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -26,9 +27,10 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(authenticationEntryPoint))
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login/**", "/api/auth/reissue", "/actuator/health", "/connect/**").permitAll()
+                        .requestMatchers(PublicPaths.PATTERNS).permitAll()
                         .requestMatchers("/api/guides/**", "api/templates/**").hasRole("GUIDE")
                         .requestMatchers(HttpMethod.GET, "/api/trips/**").authenticated()
                         .requestMatchers("/api/trips/**").hasRole("GUIDE")
