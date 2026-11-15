@@ -55,7 +55,7 @@ public class JWTService {
         return new ReissueResponse(newAccessToken, newRefreshToken);
     }
 
-    public void saveRefreshToken(User user, String token) {
+    private void saveRefreshToken(User user, String token) {
         RefreshToken refreshEntity = RefreshToken.builder()
                 .user(user)
                 .token(token)

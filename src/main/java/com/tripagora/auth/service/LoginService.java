@@ -3,8 +3,6 @@ package com.tripagora.auth.service;
 import com.tripagora.auth.dto.*;
 import com.tripagora.auth.exception.SocialAccessTokenInvalidException;
 import com.tripagora.auth.exception.SocialJsonParseErrorException;
-import com.tripagora.auth.util.JWTUtil;
-import com.tripagora.auth.util.TokenType;
 import com.tripagora.common.image.event.ImageDeletionEvent;
 import com.tripagora.common.image.exception.ImageException;
 import com.tripagora.common.image.service.ImageService;
@@ -35,7 +33,6 @@ import java.util.Optional;
 public class LoginService {
     private final ImageService imageService;
     private final JWTService jwtService;
-    private final JWTUtil jwtUtil;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
     private final TransactionTemplate transactionTemplate;
@@ -77,13 +74,8 @@ public class LoginService {
                 .imageUrl(profileImageUrl)
                 .build()));
 
-        String accessToken = jwtUtil.createToken(user.getId(), user.getRole().name(), TokenType.ACCESS);
-        String refreshToken = jwtUtil.createToken(user.getId(), user.getRole().name(), TokenType.REFRESH);
-
-        jwtService.deleteRefreshTokenByUserId(user.getId());
-        jwtService.saveRefreshToken(user, refreshToken);
-
-        return new SocialLoginResponse(accessToken, refreshToken, isNewUser);
+        ReissueResponse tokens = jwtService.issueTokensForUser(user);
+        return new SocialLoginResponse(tokens.accessToken(), tokens.refreshToken(), isNewUser);
     }
 
     private String fetchUserInfo(String socialAccessToken, SocialType socialType) {
