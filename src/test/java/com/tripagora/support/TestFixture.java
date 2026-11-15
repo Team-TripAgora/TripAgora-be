@@ -41,9 +41,14 @@ public class TestFixture {
         }
     }
 
+    // 실제 여행 개설처럼 템플릿의 제목·소개·사진·태그·지역을 여행 사본으로 함께 넣는다 (템플릿 내용을 먼저 넣고 부를 것)
     public void trip(long id, long templateId, TripStatus status, LocalDate startDate, LocalDate endDate) {
-        jdbcTemplate.update("INSERT INTO trip (id, created_at, modified_at, current_participants, start_date, end_date, max_participants, status, template_id) " +
-                "VALUES (?, NOW(6), NOW(6), 0, ?, ?, 4, ?, ?)", id, startDate, endDate, status.name(), templateId);
+        jdbcTemplate.update("INSERT INTO trip (id, created_at, modified_at, current_participants, start_date, end_date, max_participants, status, template_id, title, content) " +
+                "SELECT ?, NOW(6), NOW(6), 0, ?, ?, 4, ?, t.id, t.title, t.content FROM template t WHERE t.id = ?", id, startDate, endDate, status.name(), templateId);
+        jdbcTemplate.update("INSERT INTO trip_image (created_at, modified_at, display_order, image_url, trip_id) " +
+                "SELECT NOW(6), NOW(6), display_order, image_url, ? FROM template_image WHERE template_id = ?", id, templateId);
+        jdbcTemplate.update("INSERT INTO trip_tag (trip_id, tag_id) SELECT ?, tag_id FROM template_tag WHERE template_id = ?", id, templateId);
+        jdbcTemplate.update("INSERT INTO trip_region (trip_id, region_id) SELECT ?, region_id FROM template_region WHERE template_id = ?", id, templateId);
     }
 
     // 여행 일정 (여행을 개설할 때 템플릿 일정을 복사해 여행이 따로 갖는 행)

@@ -5,8 +5,10 @@ import com.tripagora.itinerary.entity.Itineraries;
 import com.tripagora.itinerary.entity.Itinerary;
 import com.tripagora.participation.entity.Participation;
 import com.tripagora.participation.exception.ParticipationCancelNotAllowedException;
+import com.tripagora.region.entity.TripRegion;
 import com.tripagora.review.entity.Review;
 import com.tripagora.room.entity.Room;
+import com.tripagora.tag.entity.TripTag;
 import com.tripagora.trip.exception.TripAlreadyEndedException;
 import com.tripagora.trip.exception.TripDeleteNotAllowedException;
 import com.tripagora.trip.exception.TripFullException;
@@ -53,6 +55,23 @@ public class Trip extends BaseEntity {
     @Column(nullable = false)
     private TripStatus status;
 
+    // 여행이 열린 시점의 상품 정보 (템플릿에서 복사한 사본. 이후 템플릿을 고쳐도 이 여행은 그대로)
+    @Column(nullable = false)
+    private String title;
+
+    @Column(nullable = false)
+    private String content;
+
+    @OrderBy("displayOrder ASC")
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TripImage> images = new ArrayList<>();
+
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TripTag> tags = new ArrayList<>();
+
+    @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TripRegion> regions = new ArrayList<>();
+
     @OrderBy("day ASC , startTime ASC ")
     @OneToMany(mappedBy = "trip", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Itinerary> itineraries = new ArrayList<>();
@@ -76,6 +95,26 @@ public class Trip extends BaseEntity {
         this.startDate = startDate;
         this.endDate = calculateEndDate(template, startDate);
         this.status = TripStatus.RECRUITING;
+        copyProductInfoFrom(template);
+    }
+
+    // 템플릿의 제목·소개·사진·태그·지역을 이 여행의 사본으로 복사한다 (일정은 copyItinerariesFrom)
+    private void copyProductInfoFrom(Template template) {
+        this.title = template.getTitle();
+        this.content = template.getContent();
+        template.getTemplateImages().forEach(image -> this.images.add(TripImage.builder()
+                .trip(this)
+                .imageUrl(image.getImageUrl())
+                .displayOrder(image.getDisplayOrder())
+                .build()));
+        template.getTemplateTags().forEach(templateTag -> this.tags.add(TripTag.builder()
+                .trip(this)
+                .tag(templateTag.getTag())
+                .build()));
+        template.getTemplateRegions().forEach(templateRegion -> this.regions.add(TripRegion.builder()
+                .trip(this)
+                .region(templateRegion.getRegion())
+                .build()));
     }
 
     // 일정을 통째로 바꾼다 (일차 검사는 Itineraries를 만들 때 끝난다)
