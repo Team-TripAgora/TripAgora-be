@@ -31,7 +31,10 @@ public class SecurityConfig {
                         .accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PublicPaths.PATTERNS).permitAll()
-                        .requestMatchers("/api/guides/**", "api/templates/**").hasRole("GUIDE")
+                        .requestMatchers("/api/templates/**").hasRole("GUIDE")
+                        // 가이드 프로필은 보기는 누구나, 고치기(소개·사진·포트폴리오)는 가이드만
+                        .requestMatchers(HttpMethod.PATCH, "/api/guide-profiles/me/**").hasRole("GUIDE")
+                        .requestMatchers(HttpMethod.PUT, "/api/guide-profiles/me/**").hasRole("GUIDE")
                         .requestMatchers(HttpMethod.GET, "/api/trips/**").authenticated()
                         .requestMatchers("/api/trips/**").hasRole("GUIDE")
                         .requestMatchers(HttpMethod.GET, "/api/rooms/{roomId}/notices/**").authenticated()

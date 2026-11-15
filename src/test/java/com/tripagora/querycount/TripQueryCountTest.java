@@ -39,7 +39,8 @@ class TripQueryCountTest extends QueryCountTest {
     }
 
     @ParameterizedTest(name = "{displayName}: 여행 {0}건 → 쿼리 {1}개, 엔티티 {2}개")
-    @CsvSource({"5, 22, 37", "10, 42, 72"})
+    // 가이드 토큰 요청은 인증 필터가 현재 역할을 한 번 확인한다 (#171 PR 2, 쿼리 +1, 엔티티 그대로)
+    @CsvSource({"5, 23, 37", "10, 43, 72"})
     @DisplayName("내가 만든 여행 목록")
     void myTrips(int trips, long queries, long entities) throws Exception {
         for (long id = 1; id <= trips; id++) {
