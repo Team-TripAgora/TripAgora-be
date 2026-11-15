@@ -1,5 +1,6 @@
 package com.tripagora.participation.service;
 
+import com.tripagora.common.exception.UniqueConstraints;
 import com.tripagora.participation.dto.response.ParticipationResponse;
 import com.tripagora.participation.entity.Participation;
 import com.tripagora.participation.exception.*;
@@ -13,6 +14,7 @@ import com.tripagora.user.entity.User;
 import com.tripagora.user.exception.UserNotFoundException;
 import com.tripagora.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,8 +27,10 @@ public class ParticipationService {
 
     @Transactional
     public ParticipationResponse applyForTrip(Long userId, Long tripId) {
-        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
-        Trip trip = tripRepository.findById(tripId).orElseThrow(TripNotFoundException::new);
+        // 사용자 → 여행 순서로 잠근다 (순서를 고정해 데드락을 막는다). 같은 사용자의 신청과
+        // 같은 여행의 인원 변경이 한 번에 하나씩 처리되므로, 아래 정원·중복·일정 확인이 최신 상태로 이루어진다
+        User user = userRepository.findByIdForUpdate(userId).orElseThrow(UserNotFoundException::new);
+        Trip trip = tripRepository.findByIdForUpdate(tripId).orElseThrow(TripNotFoundException::new);
 
         trip.validateJoinable();
 
@@ -57,7 +61,15 @@ public class ParticipationService {
                 .role(Role.TRAVELER)
                 .build();
 
-        participationRepository.save(participation);
+        try {
+            participationRepository.save(participation);
+        } catch (DataIntegrityViolationException e) {
+            // 같은 사용자의 같은 여행 신청이 동시에 들어와 먼저 저장된 것이 있으면
+            if (UniqueConstraints.isViolated(e, Participation.UNIQUE_USER_TRIP)) {
+                throw new AlreadyParticipatingException();
+            }
+            throw e;
+        }
         trip.addParticipation(participation);
 
         return new ParticipationResponse(
@@ -69,7 +81,7 @@ public class ParticipationService {
 
     @Transactional
     public void cancelParticipation(Long userId, Long tripId) {
-        Trip trip = tripRepository.findById(tripId).orElseThrow(TripNotFoundException::new);
+        Trip trip = tripRepository.findByIdForUpdate(tripId).orElseThrow(TripNotFoundException::new);
 
         Participation participation = participationRepository.findByUser_IdAndTrip_Id(userId, tripId)
                 .orElseThrow(ParticipationNotFoundException::new);

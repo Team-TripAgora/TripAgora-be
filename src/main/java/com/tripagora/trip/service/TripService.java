@@ -163,7 +163,8 @@ public class TripService {
 
     @Transactional
     public void updateTrip(long userId, long tripId, TripUpdateRequest request) {
-        Trip trip = findTripAndVerifyOwner(userId, tripId);
+        // 정원 확인(현재 인원보다 적게 못 줄임)이 동시에 들어온 참가 신청과 엇갈리지 않게 여행 행을 잠근다
+        Trip trip = lockTripAndVerifyOwner(userId, tripId);
         trip.validateUpdatable();
 
         if (request.maxParticipants() < trip.getCurrentParticipants()) {
@@ -191,7 +192,8 @@ public class TripService {
 
     @Transactional
     public void deleteTrip(long userId, long tripId) {
-        Trip trip = findTripAndVerifyOwner(userId, tripId);
+        // 삭제 직전에 들어온 참가 신청과 엇갈리지 않게 여행 행을 잠근다 (신청이 먼저면 그 참가 기록도 함께 지운다)
+        Trip trip = lockTripAndVerifyOwner(userId, tripId);
         trip.validateDeletable();
 
         tripRepository.delete(trip);
@@ -293,7 +295,8 @@ public class TripService {
 
     @Transactional
     public void closeRecruitment(long userId, long tripId) {
-        Trip trip = findTripAndVerifyOwner(userId, tripId);
+        // 마감 직전에 들어온 참가 신청과 엇갈리지 않게 여행 행을 잠근다
+        Trip trip = lockTripAndVerifyOwner(userId, tripId);
         trip.closeRecruitment(LocalDate.now());
 
         Room room = Room.builder()
@@ -324,8 +327,9 @@ public class TripService {
         trip.replaceItineraries(request.toItineraries());
     }
 
-    private Trip findTripAndVerifyOwner(long userId, long tripId) {
-        Trip trip = tripRepository.findById(tripId).orElseThrow(TripNotFoundException::new);
+    // 가이드가 여행을 바꾸는 작업(수정·삭제·모집 마감)은 모두 여행 행을 잠그고 시작한다
+    private Trip lockTripAndVerifyOwner(long userId, long tripId) {
+        Trip trip = tripRepository.findByIdForUpdate(tripId).orElseThrow(TripNotFoundException::new);
 
         if (!trip.getTemplate().getGuideProfile().getUser().getId().equals(userId)) {
             throw new AccessDeniedException();
