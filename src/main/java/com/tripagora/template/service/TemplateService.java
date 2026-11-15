@@ -9,6 +9,7 @@ import com.tripagora.region.entity.Region;
 import com.tripagora.region.exception.InvalidRegionSelectionException;
 import com.tripagora.region.exception.RegionHierarchyConflictException;
 import com.tripagora.region.repository.RegionRepository;
+import com.tripagora.trip.repository.TripImageRepository;
 import com.tripagora.trip.repository.TripRepository;
 import com.tripagora.tag.entity.Tag;
 import com.tripagora.tag.exception.InvalidTagSelectionException;
@@ -49,6 +50,7 @@ public class TemplateService {
     private final TagRepository tagRepository;
     private final RegionRepository regionRepository;
     private final TripRepository tripRepository;
+    private final TripImageRepository tripImageRepository;
     private final TransactionTemplate transactionTemplate;
     private final ApplicationEventPublisher eventPublisher;
 
@@ -197,7 +199,18 @@ public class TemplateService {
         template.clearImages();
         newImageUrls.forEach(template::addImage);
 
-        eventPublisher.publishEvent(new ImageDeletionEvent(oldImageUrls));
+        eventPublisher.publishEvent(new ImageDeletionEvent(excludeUsedByTrips(oldImageUrls)));
+    }
+
+    // 여행은 열릴 때 템플릿 사진 주소를 사본으로 가져가 같은 S3 파일을 함께 쓴다. 여행 사본이 아직 쓰는 파일은 지우지 않는다
+    private List<String> excludeUsedByTrips(List<String> imageUrls) {
+        if (imageUrls.isEmpty()) {
+            return imageUrls;
+        }
+        List<String> usedByTrips = tripImageRepository.findImageUrlsIn(imageUrls);
+        return imageUrls.stream()
+                .filter(imageUrl -> !usedByTrips.contains(imageUrl))
+                .toList();
     }
 
     @Transactional
