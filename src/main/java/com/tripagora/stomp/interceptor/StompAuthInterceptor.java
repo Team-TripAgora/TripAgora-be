@@ -5,6 +5,7 @@ import com.tripagora.auth.exception.UnAuthorizedAccessException;
 import com.tripagora.auth.util.JWTUtil;
 import com.tripagora.auth.util.TokenClaims;
 import com.tripagora.auth.util.TokenType;
+import com.tripagora.stomp.RoomDestinations;
 import com.tripagora.stomp.exception.InvalidDestinationException;
 import com.tripagora.room.service.RoomAccessValidator;
 import lombok.RequiredArgsConstructor;
@@ -65,15 +66,10 @@ public class StompAuthInterceptor implements ChannelInterceptor {
             }
 
             String destination = accessor.getDestination();
-            if (destination == null || !destination.startsWith("/topic/room/")) {
-                log.warn("STOMP SUBSCRIBE 실패 - 유효하지 않은 destination: {}", destination);
-                throw new InvalidDestinationException();
-            }
-
-            String[] parts = destination.split("/");
+            Long roomId = RoomDestinations.roomIdOfSubscription(destination)
+                    .orElseThrow(() -> invalidDestination(StompCommand.SUBSCRIBE, destination));
 
             Long userId = (Long) auth.getPrincipal();
-            Long roomId = Long.parseLong(parts[3]);
             roomAccessValidator.validateParticipant(userId, roomId);
 
             log.info("STOMP SUBSCRIBE 성공 - userId: {}, roomId: {}", userId, roomId);
@@ -87,15 +83,18 @@ public class StompAuthInterceptor implements ChannelInterceptor {
             }
 
             String destination = accessor.getDestination();
-            if (destination == null || !destination.startsWith("/publish/room/")) {
-                log.warn("STOMP SEND 실패 - 유효하지 않은 destination: {}", destination);
-                throw new InvalidDestinationException();
-            }
+            RoomDestinations.roomIdOfPublish(destination)
+                    .orElseThrow(() -> invalidDestination(StompCommand.SEND, destination));
 
             Long userId = (Long) auth.getPrincipal();
             log.info("STOMP SEND 성공 - userId: {}", userId);
         }
 
         return message;
+    }
+
+    private InvalidDestinationException invalidDestination(StompCommand command, String destination) {
+        log.warn("STOMP {} 실패 - 유효하지 않은 destination: {}", command, destination);
+        return new InvalidDestinationException();
     }
 }
