@@ -25,7 +25,8 @@ class TripQueryCountTest extends QueryCountTest {
 
     @ParameterizedTest(name = "{displayName}: 여행 {0}건 → 쿼리 {1}개, 엔티티 {2}개")
     // 사진·지역을 여행 id로 묶어서 불러와 고정 개수가 되고, 여행마다 채팅방 조회 1개만 남는다 (#176 배치 크기. 역방향 1:1이라 배치로 묶이지 않음)
-    @CsvSource({"5, 8, 37", "10, 13, 72"})
+    // 채팅방 외래 키를 여행 쪽으로 옮겨 여행마다 채팅방을 조회하지 않는다 (#176, 쿼리 −여행 수)
+    @CsvSource({"5, 3, 37", "10, 3, 72"})
     @DisplayName("여행 검색")
     void searchTrips(int trips, long queries, long entities) throws Exception {
         for (long id = 1; id <= trips; id++) {
@@ -43,7 +44,8 @@ class TripQueryCountTest extends QueryCountTest {
     // 가이드 토큰 요청은 인증 필터가 현재 역할을 한 번 확인한다 (#171 PR 2, 쿼리 +1, 엔티티 그대로)
     // 제목·대표 사진·지역을 여행 사본에서 읽어 여행마다 템플릿을 불러오지 않는다 (#174, 쿼리·엔티티 여행 수만큼 감소)
     // 사진·지역을 여행 id로 묶어서 불러와 고정 개수가 되고, 여행마다 채팅방 조회 1개만 남는다 (#176 배치 크기. 역방향 1:1이라 배치로 묶이지 않음)
-    @CsvSource({"5, 10, 32", "10, 15, 62"})
+    // 채팅방 외래 키를 여행 쪽으로 옮겨 여행마다 채팅방을 조회하지 않는다 (#176, 쿼리 −여행 수)
+    @CsvSource({"5, 5, 32", "10, 5, 62"})
     @DisplayName("내가 만든 여행 목록")
     void myTrips(int trips, long queries, long entities) throws Exception {
         for (long id = 1; id <= trips; id++) {
@@ -60,7 +62,8 @@ class TripQueryCountTest extends QueryCountTest {
     @ParameterizedTest(name = "{displayName}: 여행 {0}건 → 쿼리 {1}개, 엔티티 {2}개")
     // 제목·대표 사진·지역을 여행 사본에서 읽어 여행마다 템플릿을 불러오지 않는다 (#174, 쿼리·엔티티 여행 수만큼 감소)
     // 여행·사진·지역을 id로 묶어서 불러와 고정 개수 (#176 배치 크기. 여행을 묶어 부르는 SQL에 채팅방이 조인됨)
-    @CsvSource({"5, 5, 41", "10, 5, 81"})
+    // 여행을 읽을 때 채팅방을 함께 불러오지 않는다 (#176 채팅방 외래 키, 엔티티 −여행 수)
+    @CsvSource({"5, 5, 36", "10, 5, 71"})
     @DisplayName("참가한 여행 목록 (모집 마감, 채팅방 있음)")
     void participatingTrips(int trips, long queries, long entities) throws Exception {
         for (long id = 1; id <= trips; id++) {
@@ -96,7 +99,8 @@ class TripQueryCountTest extends QueryCountTest {
     @ParameterizedTest(name = "{displayName}: 여행 {0}건 → 쿼리 {1}개, 엔티티 {2}개")
     // 제목·대표 사진·지역을 여행 사본에서 읽어 여행마다 템플릿을 불러오지 않는다 (#174, 쿼리·엔티티 여행 수만큼 감소)
     // 사진·지역을 여행 id로 묶어서 불러와 고정 개수가 되고, 여행마다 채팅방 조회 1개만 남는다 (#176 배치 크기. 역방향 1:1이라 배치로 묶이지 않음)
-    @CsvSource({"5, 12, 32", "10, 17, 62"})
+    // 채팅방 외래 키를 여행 쪽으로 옮겨 여행마다 채팅방을 조회하지 않는다 (#176, 쿼리 −여행 수)
+    @CsvSource({"5, 7, 32", "10, 7, 62"})
     @DisplayName("가이드 프로필 (모집중 여행 목록 포함)")
     void guideProfile(int trips, long queries, long entities) throws Exception {
         for (long id = 1; id <= trips; id++) {
@@ -112,7 +116,8 @@ class TripQueryCountTest extends QueryCountTest {
 
     @ParameterizedTest(name = "{displayName}: 여행 {0}건 → 쿼리 {1}개, 엔티티 {2}개")
     // 여행·사진·지역을 id로 묶어서 불러와 고정 개수가 되고, 여행마다 '내 리뷰' 조회 1개만 남는다 (#176 배치 크기. 쿼리 메서드 호출이라 배치로 묶이지 않음)
-    @CsvSource({"5, 10, 44", "10, 15, 86"})
+    // 여행을 읽을 때 채팅방을 함께 불러오지 않는다 (#176 채팅방 외래 키, 엔티티 −여행 수)
+    @CsvSource({"5, 10, 39", "10, 15, 76"})
     @DisplayName("완료 여행 목록 (홀수 번째 여행만 리뷰 작성)")
     void completedTrips(int trips, long queries, long entities) throws Exception {
         for (long id = 1; id <= trips; id++) {
@@ -132,7 +137,8 @@ class TripQueryCountTest extends QueryCountTest {
 
     @ParameterizedTest(name = "{displayName}: 참가자 {0}명 → 쿼리 {1}개, 엔티티 {2}개")
     // 참가자의 사용자를 id로 묶어서 불러와 고정 개수 (#176 배치 크기)
-    @CsvSource({"2, 10, 15", "4, 10, 19"})
+    // 여행을 읽을 때 채팅방을 함께 불러오지 않는다 (#176 채팅방 외래 키, 엔티티 −1. 채팅방 id는 외래 키 값으로)
+    @CsvSource({"2, 10, 14", "4, 10, 18"})
     @DisplayName("여행 상세 (모집 마감, 가이드 포함 참가자)")
     void tripDetail(int participants, long queries, long entities) throws Exception {
         tripWithOwnTemplate(1L, GUIDE, TripStatus.RECRUITMENT_CLOSED);

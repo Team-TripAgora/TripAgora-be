@@ -50,7 +50,8 @@ class ChatLocationQueryCountTest extends QueryCountTest {
 
     @ParameterizedTest(name = "{displayName}: 보낸 사람 {0}명 → 쿼리 {1}개, 엔티티 {2}개")
     // 보낸 사람을 id로 묶어서 불러와 고정 개수 (#176 배치 크기)
-    @CsvSource({"2, 4, 35", "4, 4, 37"})
+    // 채팅방을 읽으면 그 여행도 함께 불러온다 (#176 채팅방 외래 키로 채팅방 쪽이 역방향이 됨, 엔티티 +1. PR 2에서 참가 확인을 JOIN 한 번으로 바꾸며 정리)
+    @CsvSource({"2, 4, 36", "4, 4, 38"})
     @DisplayName("채팅 이력 (메시지 30건)")
     void chatHistory(int senders, long queries, long entities) throws Exception {
         travelersUpTo(senders);
@@ -73,7 +74,8 @@ class ChatLocationQueryCountTest extends QueryCountTest {
 
         Counts counts = measure(() -> chatService.processAndSaveMessage(TRAVELER, ROOM, new ChatMessageRequest("안녕하세요")));
 
-        assertCounts(counts, 5, 4);
+        // 채팅방을 읽을 때 여행이 함께 불러와져 참가 확인 뒤의 여행 조회가 없어진다 (#176 채팅방 외래 키, 쿼리 −1)
+        assertCounts(counts, 4, 4);
     }
 
     @Test
@@ -83,7 +85,8 @@ class ChatLocationQueryCountTest extends QueryCountTest {
 
         Counts counts = measure(() -> locationService.updateLocation(TRAVELER, ROOM, new LocationUpdateRequest(37.51, 127.01)));
 
-        assertCounts(counts, 6, 4);
+        // 채팅방을 읽을 때 여행이 함께 불러와져 참가 확인 뒤의 여행 조회가 없어진다 (#176 채팅방 외래 키, 쿼리 −1)
+        assertCounts(counts, 5, 4);
     }
 
     @Test
@@ -94,12 +97,14 @@ class ChatLocationQueryCountTest extends QueryCountTest {
 
         Counts counts = measure(() -> locationService.updateLocation(TRAVELER, ROOM, new LocationUpdateRequest(37.51, 127.01)));
 
-        assertCounts(counts, 6, 5);
+        // 채팅방을 읽을 때 여행이 함께 불러와져 참가 확인 뒤의 여행 조회가 없어진다 (#176 채팅방 외래 키, 쿼리 −1)
+        assertCounts(counts, 5, 5);
     }
 
     @ParameterizedTest(name = "{displayName}: 위치 {0}명 → 쿼리 {1}개, 엔티티 {2}개")
     // 위치의 사용자를 id로 묶어서 불러와 고정 개수 (#176 배치 크기)
-    @CsvSource({"2, 4, 7", "4, 4, 11"})
+    // 채팅방을 읽으면 그 여행도 함께 불러온다 (#176 채팅방 외래 키로 채팅방 쪽이 역방향이 됨, 엔티티 +1. PR 2에서 참가 확인을 JOIN 한 번으로 바꾸며 정리)
+    @CsvSource({"2, 4, 8", "4, 4, 12"})
     @DisplayName("위치 목록")
     void roomLocations(int participants, long queries, long entities) throws Exception {
         travelersUpTo(participants);

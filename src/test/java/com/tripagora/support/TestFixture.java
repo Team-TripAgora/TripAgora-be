@@ -57,8 +57,12 @@ public class TestFixture {
                 "VALUES (NOW(6), NOW(6), ?, ?, 37.5, ?, 127.0, '10:00:00', ?)", day + "일차", day, "장소" + day, tripId);
     }
 
+    // 채팅방을 만들고 여행이 그 채팅방을 가리키게 한다 (외래 키는 여행 쪽 room_id. 여행을 먼저 넣고 부를 것)
     public void room(long id, long tripId) {
-        jdbcTemplate.update("INSERT INTO room (id, created_at, modified_at, trip_id) VALUES (?, NOW(6), NOW(6), ?)", id, tripId);
+        jdbcTemplate.update("INSERT INTO room (id, created_at, modified_at) VALUES (?, NOW(6), NOW(6))", id);
+        if (jdbcTemplate.update("UPDATE trip SET room_id = ? WHERE id = ?", id, tripId) != 1) {
+            throw new IllegalStateException("채팅방을 연결할 여행이 없습니다: " + tripId);
+        }
     }
 
     public void notice(long id, long roomId) {
