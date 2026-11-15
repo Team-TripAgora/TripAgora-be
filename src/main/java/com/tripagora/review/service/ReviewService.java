@@ -75,7 +75,7 @@ public class ReviewService {
         updateGuideProfileRating(guideProfile);
 
         return new ReviewResponse(
-                template.getTitle(),
+                trip.getTitle(),
                 savedReview.getId(),
                 savedReview.getAuthor().getNickname(),
                 savedReview.getAuthor().getImageUrl(),
@@ -94,7 +94,7 @@ public class ReviewService {
         updateGuideProfileRating(review.getGuideProfile());
 
         return new ReviewResponse(
-                review.getTemplate().getTitle(),
+                review.getTrip().getTitle(),
                 review.getId(),
                 review.getAuthor().getNickname(),
                 review.getAuthor().getImageUrl(),
@@ -122,7 +122,7 @@ public class ReviewService {
 
         List<ReviewResponse> reviews = reviewSlice.getContent().stream()
                 .map(review -> new ReviewResponse(
-                        review.getTemplate().getTitle(),
+                        review.getTrip().getTitle(),
                         review.getId(),
                         review.getAuthor().getNickname(),
                         review.getAuthor().getImageUrl(),
@@ -148,7 +148,7 @@ public class ReviewService {
 
         List<ReviewResponse> reviews = reviewSlice.getContent().stream()
                 .map(review -> new ReviewResponse(
-                        template.getTitle(),
+                        review.getTrip().getTitle(),
                         review.getId(),
                         review.getAuthor().getNickname(),
                         review.getAuthor().getImageUrl(),

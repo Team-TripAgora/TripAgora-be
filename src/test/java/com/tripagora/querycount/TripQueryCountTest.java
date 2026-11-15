@@ -40,7 +40,8 @@ class TripQueryCountTest extends QueryCountTest {
 
     @ParameterizedTest(name = "{displayName}: 여행 {0}건 → 쿼리 {1}개, 엔티티 {2}개")
     // 가이드 토큰 요청은 인증 필터가 현재 역할을 한 번 확인한다 (#171 PR 2, 쿼리 +1, 엔티티 그대로)
-    @CsvSource({"5, 23, 37", "10, 43, 72"})
+    // 제목·대표 사진·지역을 여행 사본에서 읽어 여행마다 템플릿을 불러오지 않는다 (#174, 쿼리·엔티티 여행 수만큼 감소)
+    @CsvSource({"5, 18, 32", "10, 33, 62"})
     @DisplayName("내가 만든 여행 목록")
     void myTrips(int trips, long queries, long entities) throws Exception {
         for (long id = 1; id <= trips; id++) {
@@ -55,7 +56,8 @@ class TripQueryCountTest extends QueryCountTest {
     }
 
     @ParameterizedTest(name = "{displayName}: 여행 {0}건 → 쿼리 {1}개, 엔티티 {2}개")
-    @CsvSource({"5, 22, 46", "10, 42, 91"})
+    // 제목·대표 사진·지역을 여행 사본에서 읽어 여행마다 템플릿을 불러오지 않는다 (#174, 쿼리·엔티티 여행 수만큼 감소)
+    @CsvSource({"5, 17, 41", "10, 32, 81"})
     @DisplayName("참가한 여행 목록 (모집 마감, 채팅방 있음)")
     void participatingTrips(int trips, long queries, long entities) throws Exception {
         for (long id = 1; id <= trips; id++) {
@@ -71,7 +73,8 @@ class TripQueryCountTest extends QueryCountTest {
     }
 
     @ParameterizedTest(name = "{displayName}: 여행 {0}건 → 쿼리 {1}개, 엔티티 {2}개")
-    @CsvSource({"5, 22, 41", "10, 42, 81"})
+    // 제목·대표 사진·지역을 여행 사본에서 읽어 여행마다 템플릿을 불러오지 않는다 (#174, 쿼리·엔티티 여행 수만큼 감소)
+    @CsvSource({"5, 17, 36", "10, 32, 71"})
     @DisplayName("찜 목록")
     void wishlist(int trips, long queries, long entities) throws Exception {
         for (long id = 1; id <= trips; id++) {
@@ -87,7 +90,8 @@ class TripQueryCountTest extends QueryCountTest {
     }
 
     @ParameterizedTest(name = "{displayName}: 여행 {0}건 → 쿼리 {1}개, 엔티티 {2}개")
-    @CsvSource({"5, 25, 37", "10, 45, 72"})
+    // 제목·대표 사진·지역을 여행 사본에서 읽어 여행마다 템플릿을 불러오지 않는다 (#174, 쿼리·엔티티 여행 수만큼 감소)
+    @CsvSource({"5, 20, 32", "10, 35, 62"})
     @DisplayName("가이드 프로필 (모집중 여행 목록 포함)")
     void guideProfile(int trips, long queries, long entities) throws Exception {
         for (long id = 1; id <= trips; id++) {

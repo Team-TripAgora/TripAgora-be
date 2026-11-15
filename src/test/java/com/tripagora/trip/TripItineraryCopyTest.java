@@ -13,6 +13,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -67,6 +68,27 @@ class TripItineraryCopyTest extends IntegrationTest {
                 .andExpect(jsonPath("$.data.itineraries[*].location", contains("경복궁")));
         mockMvc.perform(get("/api/trips/" + tripId + "/itineraries").header("Authorization", bearer(GUIDE, Role.GUIDE)))
                 .andExpect(jsonPath("$.data.itineraries[*].location", contains("장소1", "장소2", "장소3")));
+    }
+
+    @Test
+    @DisplayName("여행을 열면 제목·소개·사진·지역·태그도 여행에 사본으로 복사된다")
+    void copiesProductInfoWhenTripIsCreated() throws Exception {
+        fixture.region(1L, "서울");
+        fixture.tag(1L, "맛집");
+        fixture.templateImage(TEMPLATE, 1);
+        fixture.templateImage(TEMPLATE, 2);
+        fixture.templateRegion(TEMPLATE, 1L);
+        fixture.templateTag(TEMPLATE, 1L);
+
+        long tripId = createTrip();
+
+        assertThat(jdbcTemplate.queryForMap("SELECT title, content FROM trip WHERE id = ?", tripId))
+                .containsEntry("title", "플랜" + TEMPLATE)
+                .containsEntry("content", "테스트 플랜 소개");
+        assertThat(jdbcTemplate.queryForList("SELECT image_url FROM trip_image WHERE trip_id = ? ORDER BY display_order", String.class, tripId))
+                .containsExactly("https://example.com/template1-1.png", "https://example.com/template1-2.png");
+        assertThat(jdbcTemplate.queryForList("SELECT region_id FROM trip_region WHERE trip_id = ?", Long.class, tripId)).containsExactly(1L);
+        assertThat(jdbcTemplate.queryForList("SELECT tag_id FROM trip_tag WHERE trip_id = ?", Long.class, tripId)).containsExactly(1L);
     }
 
     private long createTrip() throws Exception {
