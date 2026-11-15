@@ -1,5 +1,6 @@
 package com.tripagora.auth;
 
+import com.tripagora.auth.util.TokenType;
 import com.tripagora.support.IntegrationTest;
 import com.tripagora.user.entity.Role;
 import org.junit.jupiter.api.BeforeEach;
@@ -73,6 +74,6 @@ class AuthFilterTest extends IntegrationTest {
     }
 
     private String refreshToken(long userId) {
-        return jwtUtil.createToken(userId, Role.TRAVELER.name(), false);
+        return jwtUtil.createToken(userId, Role.TRAVELER.name(), TokenType.REFRESH);
     }
 }

@@ -3,6 +3,8 @@ package com.tripagora.stomp.interceptor;
 import com.tripagora.auth.exception.AccessTokenInvalidException;
 import com.tripagora.auth.exception.UnAuthorizedAccessException;
 import com.tripagora.auth.util.JWTUtil;
+import com.tripagora.auth.util.TokenClaims;
+import com.tripagora.auth.util.TokenType;
 import com.tripagora.stomp.exception.InvalidDestinationException;
 import com.tripagora.participation.exception.ParticipationNotFoundException;
 import com.tripagora.participation.repository.ParticipationRepository;
@@ -48,12 +50,10 @@ public class StompAuthInterceptor implements ChannelInterceptor {
 
             String accessToken = authHeader.substring(7);
 
-            if (!jwtUtil.isValid(accessToken, true)) {
-                throw new AccessTokenInvalidException();
-            }
-
-            Long userId = jwtUtil.getUserId(accessToken);
-            String role = jwtUtil.getRole(accessToken);
+            TokenClaims claims = jwtUtil.parse(accessToken, TokenType.ACCESS)
+                    .orElseThrow(AccessTokenInvalidException::new);
+            Long userId = claims.userId();
+            String role = claims.role();
 
             List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role));
             Authentication auth = new UsernamePasswordAuthenticationToken(userId, null, authorities);

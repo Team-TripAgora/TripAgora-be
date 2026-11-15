@@ -4,6 +4,7 @@ import com.tripagora.auth.dto.*;
 import com.tripagora.auth.exception.SocialAccessTokenInvalidException;
 import com.tripagora.auth.exception.SocialJsonParseErrorException;
 import com.tripagora.auth.util.JWTUtil;
+import com.tripagora.auth.util.TokenType;
 import com.tripagora.common.image.event.ImageDeletionEvent;
 import com.tripagora.common.image.exception.ImageException;
 import com.tripagora.common.image.service.ImageService;
@@ -76,8 +77,8 @@ public class LoginService {
                 .imageUrl(profileImageUrl)
                 .build()));
 
-        String accessToken = jwtUtil.createToken(user.getId(), user.getRole().name(), true);
-        String refreshToken = jwtUtil.createToken(user.getId(), user.getRole().name(), false);
+        String accessToken = jwtUtil.createToken(user.getId(), user.getRole().name(), TokenType.ACCESS);
+        String refreshToken = jwtUtil.createToken(user.getId(), user.getRole().name(), TokenType.REFRESH);
 
         jwtService.deleteRefreshTokenByUserId(user.getId());
         jwtService.saveRefreshToken(user, refreshToken);

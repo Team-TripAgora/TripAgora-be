@@ -2,6 +2,8 @@ package com.tripagora.auth.filter;
 
 import com.tripagora.auth.security.PublicPaths;
 import com.tripagora.auth.util.JWTUtil;
+import com.tripagora.auth.util.TokenClaims;
+import com.tripagora.auth.util.TokenType;
 import com.tripagora.common.code.AuthErrorCode;
 import com.tripagora.common.code.ResponseCode;
 import com.tripagora.common.response.ApiResponse;
@@ -22,6 +24,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -45,18 +48,17 @@ public class JWTFilter extends OncePerRequestFilter {
 
         String accessToken = authorization.substring(7);
 
-        if (!jwtUtil.isValid(accessToken, true)) {
+        Optional<TokenClaims> claims = jwtUtil.parse(accessToken, TokenType.ACCESS);
+        if (claims.isEmpty()) {
             ResponseCode errorCode = AuthErrorCode.ACCESS_TOKEN_INVALID;
             ApiResponse<?> body = ApiResponse.fail(errorCode);
             ApiResponseWriter.write(response, errorCode.getStatusValue(), body);
             return;
         }
 
-        Long userId = jwtUtil.getUserId(accessToken);
-        String role = jwtUtil.getRole(accessToken);
-        List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role));
+        List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + claims.get().role()));
 
-        Authentication auth = new UsernamePasswordAuthenticationToken(userId, null, authorities);
+        Authentication auth = new UsernamePasswordAuthenticationToken(claims.get().userId(), null, authorities);
         SecurityContextHolder.getContext().setAuthentication(auth);
 
         filterChain.doFilter(request, response);

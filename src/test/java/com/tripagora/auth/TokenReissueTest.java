@@ -1,6 +1,7 @@
 package com.tripagora.auth;
 
 import com.jayway.jsonpath.JsonPath;
+import com.tripagora.auth.util.TokenType;
 import com.tripagora.support.IntegrationTest;
 import com.tripagora.user.entity.Role;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +31,7 @@ class TokenReissueTest extends IntegrationTest {
     @Test
     @DisplayName("토큰을 받은 직후(같은 초)에 연달아 재발급해도 매번 새 토큰이 나온다")
     void reissuesRepeatedlyWithinTheSameSecond() throws Exception {
-        String refreshToken = jwtUtil.createToken(USER, Role.TRAVELER.name(), false);
+        String refreshToken = jwtUtil.createToken(USER, Role.TRAVELER.name(), TokenType.REFRESH);
         jdbcTemplate.update("INSERT INTO refresh_token (token, user_id) VALUES (?, ?)", refreshToken, USER);
 
         String firstReissued = refreshTokenOf(reissue(refreshToken).andExpect(status().isOk()));
