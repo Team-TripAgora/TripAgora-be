@@ -55,7 +55,7 @@ class WithdrawalTest extends IntegrationTest {
     @Autowired
     private LoginService loginService;
 
-    private final LocalDate today = LocalDate.now();
+    private final LocalDate today = today();
 
     @BeforeEach
     void setUp() {

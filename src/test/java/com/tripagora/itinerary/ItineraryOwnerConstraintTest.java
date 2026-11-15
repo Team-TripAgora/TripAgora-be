@@ -24,7 +24,7 @@ class ItineraryOwnerConstraintTest extends IntegrationTest {
 
     @BeforeEach
     void setUp() {
-        LocalDate today = LocalDate.now();
+        LocalDate today = today();
         fixture.guide(1L);
         fixture.template(1L, 1L, 0);
         fixture.trip(1L, 1L, TripStatus.RECRUITING, today.plusDays(10), today.plusDays(10));

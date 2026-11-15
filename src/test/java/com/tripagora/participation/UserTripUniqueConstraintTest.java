@@ -28,7 +28,7 @@ class UserTripUniqueConstraintTest extends IntegrationTest {
 
     @BeforeEach
     void setUp() {
-        LocalDate startDate = LocalDate.now().plusDays(30);
+        LocalDate startDate = today().plusDays(30);
         fixture.guide(GUIDE);
         fixture.traveler(TRAVELER);
         fixture.template(1L, GUIDE, 1);

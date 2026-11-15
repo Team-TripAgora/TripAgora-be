@@ -34,7 +34,7 @@ class TripStatusTransitionTest extends IntegrationTest {
     @Autowired
     private TripScheduler tripScheduler;
 
-    private final LocalDate today = LocalDate.now();
+    private final LocalDate today = today();
 
     @BeforeEach
     void setUp() {

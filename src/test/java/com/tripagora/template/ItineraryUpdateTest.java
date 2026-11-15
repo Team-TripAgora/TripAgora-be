@@ -55,7 +55,7 @@ class ItineraryUpdateTest extends IntegrationTest {
     @Test
     @DisplayName("진행 중 여행의 일정을 새 일정으로 바꾼다")
     void replacesTripItineraries() throws Exception {
-        LocalDate today = LocalDate.now();
+        LocalDate today = today();
         fixture.template(1L, GUIDE, 2);
         fixture.trip(1L, 1L, TripStatus.IN_PROGRESS, today.minusDays(1), today);
         fixture.tripItinerary(1L, 1);
@@ -91,7 +91,7 @@ class ItineraryUpdateTest extends IntegrationTest {
     @Test
     @DisplayName("진행 중 여행 일정에 빠진 일차가 있으면 400이고, 기존 일정은 그대로다")
     void rejectsTripItinerariesWithMissingDay() throws Exception {
-        LocalDate today = LocalDate.now();
+        LocalDate today = today();
         fixture.template(1L, GUIDE, 2);
         fixture.trip(1L, 1L, TripStatus.IN_PROGRESS, today.minusDays(1), today);
         fixture.tripItinerary(1L, 1);

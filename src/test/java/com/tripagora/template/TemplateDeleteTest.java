@@ -34,7 +34,7 @@ class TemplateDeleteTest extends IntegrationTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    private final LocalDate today = LocalDate.now();
+    private final LocalDate today = today();
 
     @BeforeEach
     void setUp() {

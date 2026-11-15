@@ -22,7 +22,7 @@ class TripScheduleConflictTest extends IntegrationTest {
     private static final long TEMPLATE = 1L;
     private static final String CONFLICT_MESSAGE = "이미 해당 날짜에 진행 중인 여행이 존재합니다.";
 
-    private final LocalDate today = LocalDate.now();
+    private final LocalDate today = today();
 
     @BeforeEach
     void setUp() {

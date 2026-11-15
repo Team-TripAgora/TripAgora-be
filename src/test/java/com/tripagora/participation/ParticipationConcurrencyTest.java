@@ -30,7 +30,7 @@ class ParticipationConcurrencyTest extends IntegrationTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    private final LocalDate startDate = LocalDate.now().plusDays(30);
+    private final LocalDate startDate = today().plusDays(30);
 
     @BeforeEach
     void setUp() {

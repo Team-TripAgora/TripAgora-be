@@ -34,6 +34,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
@@ -56,6 +57,7 @@ public class TripService {
     private final RoomRepository roomRepository;
     private final WishlistRepository wishlistRepository;
     private final ReviewRepository reviewRepository;
+    private final Clock clock;
 
     @Transactional
     public TripCreateResponse createTrip(long userId, TripCreateRequest request) {
@@ -297,7 +299,7 @@ public class TripService {
     public void closeRecruitment(long userId, long tripId) {
         // 마감 직전에 들어온 참가 신청과 엇갈리지 않게 여행 행을 잠근다
         Trip trip = lockTripAndVerifyOwner(userId, tripId);
-        trip.closeRecruitment(LocalDate.now());
+        trip.closeRecruitment(LocalDate.now(clock));
 
         Room room = Room.builder()
                 .trip(trip)
