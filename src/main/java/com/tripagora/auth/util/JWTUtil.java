@@ -10,6 +10,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 public class JWTUtil {
@@ -41,7 +42,9 @@ public class JWTUtil {
         long expiration = isAccess ? accessTokenExpiration : refreshTokenExpiration;
         String type = isAccess ? "access" : "refresh";
 
+        // 고유 ID(jti): 같은 초에 같은 사용자에게 다시 발급해도 토큰이 겹치지 않게 한다 (리프레시 토큰은 DB에서 unique)
         return Jwts.builder()
+                .id(UUID.randomUUID().toString())
                 .claim("userId", userId)
                 .claim("role", role)
                 .claim("type", type)
