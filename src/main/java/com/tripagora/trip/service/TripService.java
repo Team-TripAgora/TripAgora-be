@@ -18,6 +18,7 @@ import com.tripagora.trip.dto.request.TripSearchRequest;
 import com.tripagora.trip.dto.request.TripUpdateRequest;
 import com.tripagora.trip.dto.response.*;
 import com.tripagora.trip.entity.Trip;
+import com.tripagora.trip.entity.TripImage;
 import com.tripagora.trip.entity.TripStatus;
 import com.tripagora.trip.exception.*;
 import com.tripagora.trip.repository.TripRepository;
@@ -102,17 +103,18 @@ public class TripService {
     public TripDetailResponse getTripDetails(long userId, long tripId) {
         Trip trip = tripRepository.findById(tripId).orElseThrow(TripNotFoundException::new);
 
+        // 상품 정보(제목·소개·사진·지역·태그)는 여행이 열린 시점의 사본, 가이드 정보는 최신을 보여 준다
         Template template = trip.getTemplate();
-        List<Long> regions = template.getTemplateRegions().stream()
-                .map(templateRegion -> templateRegion.getRegion().getId())
+        List<Long> regions = trip.getRegions().stream()
+                .map(tripRegion -> tripRegion.getRegion().getId())
                 .collect(Collectors.toList());
 
-        List<Long> tags = template.getTemplateTags().stream()
-                .map(templateTag -> templateTag.getTag().getId())
+        List<Long> tags = trip.getTags().stream()
+                .map(tripTag -> tripTag.getTag().getId())
                 .collect(Collectors.toList());
 
-        List<String> images = template.getTemplateImages().stream()
-                .map(image -> image.getImageUrl())
+        List<String> images = trip.getImages().stream()
+                .map(TripImage::getImageUrl)
                 .collect(Collectors.toList());
 
         List<TripParticipantResponse> participants = trip.getParticipants().stream()
@@ -142,8 +144,8 @@ public class TripService {
 
         return new TripDetailResponse(
                 template.getId(),
-                template.getTitle(),
-                template.getContent(),
+                trip.getTitle(),
+                trip.getContent(),
                 regions,
                 tags,
                 images,
@@ -249,13 +251,12 @@ public class TripService {
         List<CompletedTripResponse> completedTrips = participationSlice.getContent().stream()
                 .map(participation -> {
                     Trip trip = participation.getTrip();
-                    Template template = trip.getTemplate();
 
-                    String imageUrl = template.getTemplateImages().isEmpty() ?
-                            null : template.getTemplateImages().get(0).getImageUrl();
+                    String imageUrl = trip.getImages().isEmpty() ?
+                            null : trip.getImages().get(0).getImageUrl();
 
-                    List<Long> regions = template.getTemplateRegions().stream()
-                            .map(tr -> tr.getRegion().getId())
+                    List<Long> regions = trip.getRegions().stream()
+                            .map(tripRegion -> tripRegion.getRegion().getId())
                             .toList();
 
                     Long roomId = (trip.getRoom() == null) ? null : trip.getRoom().getId();
@@ -266,7 +267,7 @@ public class TripService {
 
                     return new CompletedTripResponse(
                             trip.getId(),
-                            template.getTitle(),
+                            trip.getTitle(),
                             imageUrl,
                             regions,
                             trip.getMaxParticipants(),
@@ -343,18 +344,17 @@ public class TripService {
     public static TripListResponse getTripListResponse(Slice<Trip> tripSlice) {
         List<TripSummaryResponse> summaries = tripSlice.getContent().stream()
                 .map(trip -> {
-                    Template template = trip.getTemplate();
-                    String imageUrl = template.getTemplateImages().isEmpty() ? null : template.getTemplateImages().get(0).getImageUrl();
+                    String imageUrl = trip.getImages().isEmpty() ? null : trip.getImages().get(0).getImageUrl();
 
-                    List<Long> regions = template.getTemplateRegions().stream()
-                            .map(tr -> tr.getRegion().getId())
+                    List<Long> regions = trip.getRegions().stream()
+                            .map(tripRegion -> tripRegion.getRegion().getId())
                             .toList();
 
                     Long roomId = (trip.getRoom() == null) ? null : trip.getRoom().getId();
 
                     return new TripSummaryResponse(
                             trip.getId(),
-                            template.getTitle(),
+                            trip.getTitle(),
                             imageUrl,
                             regions,
                             trip.getMaxParticipants(),
