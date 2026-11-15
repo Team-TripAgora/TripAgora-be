@@ -1,5 +1,6 @@
 package com.tripagora.user.repository;
 
+import com.tripagora.user.entity.Role;
 import com.tripagora.user.entity.SocialType;
 import com.tripagora.user.entity.User;
 import jakarta.persistence.LockModeType;
@@ -25,4 +26,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByNicknameAndIdNot(String nickname, Long id);
     List<User> findAllByFcmTokenAndIdNot(String fcmToken, Long id);
+
+    // 현재 역할만 읽는다 (가이드 토큰이 아직 유효한 역할인지 확인할 때)
+    @Query("SELECT u.role FROM User u WHERE u.id = :userId")
+    Optional<Role> findRoleById(@Param("userId") Long userId);
 }

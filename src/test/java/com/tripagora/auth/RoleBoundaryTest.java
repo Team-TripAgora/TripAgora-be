@@ -35,6 +35,19 @@ class RoleBoundaryTest extends IntegrationTest {
     }
 
     @Test
+    @DisplayName("여행객으로 바꾼 뒤에는 예전 가이드 토큰으로 여행을 열 수 없다")
+    void oldGuideTokenCannotCreateTripAfterSwitchingToTraveler() throws Exception {
+        String oldGuideToken = bearer(GUIDE, Role.GUIDE);
+        switchToTraveler(oldGuideToken);
+
+        createTrip(oldGuideToken)
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("유효하지 않은 액세스 토큰입니다."));
+
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM trip", Integer.class)).isZero();
+    }
+
+    @Test
     @DisplayName("여행객으로 바꾼 뒤 받은 여행객 토큰으로는 템플릿을 만들거나 고칠 수 없다")
     void travelerTokenCannotCreateOrEditTemplates() throws Exception {
         String travelerToken = switchToTraveler(bearer(GUIDE, Role.GUIDE));
