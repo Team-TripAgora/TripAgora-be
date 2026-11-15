@@ -26,7 +26,7 @@ class ReadApiResponseTest extends IntegrationTest {
 
     @BeforeEach
     void setUp() {
-        LocalDate today = LocalDate.now();
+        LocalDate today = today();
         fixture.guide(GUIDE);
         fixture.traveler(TRAVELER);
         fixture.region(1L, "서울");
@@ -98,7 +98,7 @@ class ReadApiResponseTest extends IntegrationTest {
     @Test
     @DisplayName("가이드 리뷰 목록에 템플릿 제목과 작성자가 담긴다")
     void guideReviews() throws Exception {
-        LocalDate today = LocalDate.now();
+        LocalDate today = today();
         fixture.template(2L, GUIDE, 1);
         fixture.trip(2L, TEMPLATE, TripStatus.COMPLETED, today.minusDays(10), today.minusDays(9));
         fixture.trip(3L, 2L, TripStatus.COMPLETED, today.minusDays(20), today.minusDays(20));

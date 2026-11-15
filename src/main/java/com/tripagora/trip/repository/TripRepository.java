@@ -66,6 +66,7 @@ public interface TripRepository extends JpaRepository<Trip, Long>, TripRepositor
 
     boolean existsByTemplate_Id(Long templateId);
 
-    List<Trip> findByStatusAndStartDate(TripStatus status, LocalDate startDate);
+    // 시작일이 됐거나 지난 여행 (스케줄러가 못 돈 날이 있어도 다음 실행에서 따라잡는다)
+    List<Trip> findByStatusAndStartDateLessThanEqual(TripStatus status, LocalDate today);
     List<Trip> findByStatusAndEndDateBefore(TripStatus status, LocalDate yesterday);
 }

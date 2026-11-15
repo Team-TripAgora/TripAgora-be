@@ -21,7 +21,7 @@ class TripSearchTest extends IntegrationTest {
     private static final long GUIDE = 1L;
     private static final long TRAVELER = 2L;
 
-    private final LocalDate today = LocalDate.now();
+    private final LocalDate today = today();
 
     @BeforeEach
     void setUp() {

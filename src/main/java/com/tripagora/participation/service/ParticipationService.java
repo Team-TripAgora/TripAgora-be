@@ -18,12 +18,16 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class ParticipationService {
     private final ParticipationRepository participationRepository;
     private final TripRepository tripRepository;
     private final UserRepository userRepository;
+    private final Clock clock;
 
     @Transactional
     public ParticipationResponse applyForTrip(Long userId, Long tripId) {
@@ -90,7 +94,7 @@ public class ParticipationService {
 
         // 완료된 여행은 참가 기록을 남기고 내 목록에서만 숨긴다 (다른 참가자가 보는 이력과 인원은 그대로)
         if (trip.isCompleted()) {
-            participation.hide();
+            participation.hide(LocalDateTime.now(clock));
             return;
         }
 

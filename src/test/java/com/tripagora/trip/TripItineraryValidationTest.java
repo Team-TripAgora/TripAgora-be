@@ -20,7 +20,7 @@ class TripItineraryValidationTest extends IntegrationTest {
 
     @BeforeEach
     void setUp() {
-        LocalDate today = LocalDate.now();
+        LocalDate today = today();
         fixture.guide(1L);
         fixture.template(1L, 1L, 2);
         fixture.trip(1L, 1L, TripStatus.IN_PROGRESS, today.minusDays(1), today);

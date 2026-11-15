@@ -73,7 +73,7 @@ class TripItineraryCopyTest extends IntegrationTest {
         String response = mockMvc.perform(post("/api/trips")
                         .header("Authorization", bearer(GUIDE, Role.GUIDE))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"templateId\":" + TEMPLATE + ",\"maxParticipants\":4,\"startDate\":\"" + LocalDate.now().plusDays(30) + "\"}"))
+                        .content("{\"templateId\":" + TEMPLATE + ",\"maxParticipants\":4,\"startDate\":\"" + today().plusDays(30) + "\"}"))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         return ((Number) JsonPath.read(response, "$.data.tripId")).longValue();

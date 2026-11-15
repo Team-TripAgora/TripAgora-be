@@ -23,7 +23,7 @@ class NoticeValidationTest extends IntegrationTest {
 
     @BeforeEach
     void setUp() {
-        LocalDate today = LocalDate.now();
+        LocalDate today = today();
         fixture.guide(GUIDE);
         fixture.template(1L, GUIDE, 2);
         fixture.trip(1L, 1L, TripStatus.RECRUITMENT_CLOSED, today.plusDays(30), today.plusDays(31));

@@ -80,7 +80,7 @@ class FcmTokenTest extends IntegrationTest {
     @SuppressWarnings("unchecked")
     void sosDoesNotReachDeviceOfSwitchedAccount() throws Exception {
         // A(1)·C(3)·D(4)가 같은 여행에 참가. B(2)는 참가하지 않았고, A가 쓰던 기기로 로그인한다
-        LocalDate today = LocalDate.now();
+        LocalDate today = today();
         fixture.traveler(USER_B);
         fixture.traveler(3L);
         fixture.traveler(4L);

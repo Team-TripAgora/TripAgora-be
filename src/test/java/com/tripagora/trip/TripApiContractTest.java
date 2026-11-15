@@ -21,7 +21,7 @@ class TripApiContractTest extends IntegrationTest {
     private static final long TRAVELER = 2L;
     private static final long ROOM = 1L;
 
-    private final LocalDate today = LocalDate.now();
+    private final LocalDate today = today();
 
     @BeforeEach
     void setUp() {

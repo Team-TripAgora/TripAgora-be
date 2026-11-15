@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -17,20 +18,21 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TripScheduler {
     private final TripRepository tripRepository;
+    private final Clock clock;
 
     @Transactional
     @Scheduled(cron = "0 1 0 * * *", zone = "Asia/Seoul")
     public void startTrips() {
-        LocalDate today = LocalDate.now();
-        log.info("[TripScheduler] 'IN_PROGRESS' 상태 변경 작업 시작 (대상 날짜: {})", today);
+        LocalDate today = LocalDate.now(clock);
+        log.info("[TripScheduler] 'IN_PROGRESS' 상태 변경 작업 시작 (시작일이 {} 이하)", today);
 
-        List<Trip> tripsToStart = tripRepository.findByStatusAndStartDate(
+        List<Trip> tripsToStart = tripRepository.findByStatusAndStartDateLessThanEqual(
                 TripStatus.RECRUITMENT_CLOSED, today
         );
 
         tripsToStart.forEach(trip -> {
             trip.start();
-            log.info(" - 여행 ID {} 상태 변경: IN_PROGRESS (시작일 도래)", trip.getId());
+            log.info(" - 여행 ID {} 상태 변경: IN_PROGRESS (시작일 {})", trip.getId(), trip.getStartDate());
         });
 
         log.info("[TripScheduler] 'IN_PROGRESS' 상태 변경 작업 완료 (총 {}건)", tripsToStart.size());
@@ -39,7 +41,7 @@ public class TripScheduler {
     @Transactional
     @Scheduled(cron = "0 3 0 * * *", zone = "Asia/Seoul")
     public void completeTrips() {
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clock);
         log.info("[TripScheduler] 'COMPLETED' 상태 변경 작업 시작 (대상 날짜: {} 이전)", today);
 
         List<Trip> tripsToComplete = tripRepository.findByStatusAndEndDateBefore(

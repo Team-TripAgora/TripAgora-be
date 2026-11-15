@@ -25,7 +25,7 @@ class TripQueryTest extends IntegrationTest {
     private static final long NOT_REVIEWED_TRIP = 5L;
     private static final long REVIEW = 10L;
 
-    private final LocalDate today = LocalDate.now();
+    private final LocalDate today = today();
 
     @BeforeEach
     void setUp() {
