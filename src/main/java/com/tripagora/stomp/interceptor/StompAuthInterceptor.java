@@ -6,11 +6,7 @@ import com.tripagora.auth.util.JWTUtil;
 import com.tripagora.auth.util.TokenClaims;
 import com.tripagora.auth.util.TokenType;
 import com.tripagora.stomp.exception.InvalidDestinationException;
-import com.tripagora.participation.exception.ParticipationNotFoundException;
-import com.tripagora.participation.repository.ParticipationRepository;
-import com.tripagora.room.entity.Room;
-import com.tripagora.room.exception.RoomNotFoundException;
-import com.tripagora.room.repository.RoomRepository;
+import com.tripagora.room.service.RoomAccessValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.Message;
@@ -33,8 +29,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StompAuthInterceptor implements ChannelInterceptor {
     private final JWTUtil jwtUtil;
-    private final RoomRepository roomRepository;
-    private final ParticipationRepository participationRepository;
+    private final RoomAccessValidator roomAccessValidator;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -79,11 +74,7 @@ public class StompAuthInterceptor implements ChannelInterceptor {
 
             Long userId = (Long) auth.getPrincipal();
             Long roomId = Long.parseLong(parts[3]);
-            Room room = roomRepository.findById(roomId).orElseThrow(RoomNotFoundException::new);
-            Long tripId = room.getTrip().getId();
-
-            participationRepository.findByUser_IdAndTrip_Id(userId, tripId)
-                    .orElseThrow(ParticipationNotFoundException::new);
+            roomAccessValidator.validateParticipant(userId, roomId);
 
             log.info("STOMP SUBSCRIBE 성공 - userId: {}, roomId: {}", userId, roomId);
         }
