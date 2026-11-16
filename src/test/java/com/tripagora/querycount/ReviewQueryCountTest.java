@@ -58,7 +58,8 @@ class ReviewQueryCountTest extends QueryCountTest {
 
     @ParameterizedTest(name = "{displayName}: 기존 리뷰 {0}건, 가이드 템플릿 {1}개 → 쿼리 {2}개, 엔티티 {3}개")
     // 리뷰할 여행을 읽을 때 채팅방을 함께 불러오지 않는다 (#176 채팅방 외래 키, 엔티티 −1)
-    @CsvSource({"5, 2, 11, 11", "10, 4, 11, 18"})
+    // 평점을 집계 쿼리로 계산해 리뷰·템플릿을 전부 불러오지 않는다 (#176 PR 3, 엔티티가 리뷰·템플릿 수와 무관하게 고정)
+    @CsvSource({"5, 2, 11, 5", "10, 4, 11, 5"})
     @DisplayName("리뷰 작성 (템플릿·가이드 평점 재계산)")
     void createReview(int existingReviews, int guideTemplates, long queries, long entities) throws Exception {
         reviewsByOtherTravelers(existingReviews);
