@@ -22,7 +22,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-// 채팅방 STOMP 주소 형식: 구독 /topic/room/{roomId}/(chat|location), 발행 /publish/room/{roomId}/(chat|location)
+// 채팅방 STOMP 주소 형식: 구독 /topic/room/{roomId}/(chat|location)과 내 오류 큐 /user/queue/errors, 발행 /publish/room/{roomId}/(chat|location)
 class StompDestinationTest extends IntegrationTest {
     private static final long TRAVELER = 2L;
     private static final long ROOM = 10L;
@@ -42,14 +42,14 @@ class StompDestinationTest extends IntegrationTest {
     }
 
     @ParameterizedTest(name = "{0}")
-    @ValueSource(strings = {"/topic/room/10/chat", "/topic/room/10/location"})
-    @DisplayName("형식이 맞는 채팅방 구독은 통과한다")
+    @ValueSource(strings = {"/topic/room/10/chat", "/topic/room/10/location", "/user/queue/errors"})
+    @DisplayName("형식이 맞는 채팅방 구독과 내 오류 큐 구독은 통과한다")
     void validSubscription(String destination) {
         assertThatCode(() -> send(StompCommand.SUBSCRIBE, destination)).doesNotThrowAnyException();
     }
 
     @ParameterizedTest(name = "{0}")
-    @ValueSource(strings = {"/topic/room/abc/chat", "/topic/room/10/unknown", "/topic/room/", "/topic/room/10", "/topic/room/10/chat/extra", "/topic/other"})
+    @ValueSource(strings = {"/topic/room/abc/chat", "/topic/room/10/unknown", "/topic/room/", "/topic/room/10", "/topic/room/10/chat/extra", "/topic/other", "/queue/errors", "/user/queue/other"})
     @DisplayName("형식이 틀린 구독 주소는 INVALID_DESTINATION으로 거부한다")
     void invalidSubscription(String destination) {
         assertThatThrownBy(() -> send(StompCommand.SUBSCRIBE, destination)).isInstanceOf(InvalidDestinationException.class);

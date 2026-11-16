@@ -66,10 +66,16 @@ public class StompAuthInterceptor implements ChannelInterceptor {
             }
 
             String destination = accessor.getDestination();
+            Long userId = (Long) auth.getPrincipal();
+
+            // 내 오류 큐는 나에게 온 것만 받으므로 로그인만 확인한다
+            if (RoomDestinations.USER_ERRORS.equals(destination)) {
+                log.info("STOMP SUBSCRIBE 성공 - userId: {}, 오류 큐", userId);
+                return message;
+            }
+
             Long roomId = RoomDestinations.roomIdOfSubscription(destination)
                     .orElseThrow(() -> invalidDestination(StompCommand.SUBSCRIBE, destination));
-
-            Long userId = (Long) auth.getPrincipal();
             roomAccessValidator.validateParticipant(userId, roomId);
 
             log.info("STOMP SUBSCRIBE 성공 - userId: {}, roomId: {}", userId, roomId);

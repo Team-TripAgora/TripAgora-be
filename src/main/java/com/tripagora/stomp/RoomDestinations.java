@@ -11,6 +11,10 @@ public final class RoomDestinations {
     public static final String CHAT = "chat";
     public static final String LOCATION = "location";
 
+    // 채팅·위치 메시지 처리 중 오류를 보낸 사람에게만 알리는 주소 (보낼 때는 /queue/errors, 앱은 /user/queue/errors를 구독)
+    public static final String ERRORS = "/queue/errors";
+    public static final String USER_ERRORS = "/user" + ERRORS;
+
     private static final String CHANNELS = "(" + CHAT + "|" + LOCATION + ")";
     private static final Pattern SUBSCRIPTION = Pattern.compile("/topic/room/(\\d{1,18})/" + CHANNELS);
     private static final Pattern PUBLISH = Pattern.compile("/publish/room/(\\d{1,18})/" + CHANNELS);
