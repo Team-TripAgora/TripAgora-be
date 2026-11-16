@@ -18,7 +18,7 @@ public class ParticipationController {
     public ApiResponse<ParticipationResponse> applyForTrip(@AuthenticationPrincipal final long userId,
                                                               @PathVariable final long tripId) {
         ParticipationResponse response = participationService.applyForTrip(userId, tripId);
-        return ApiResponse.success(SuccessCode.OK, response);
+        return ApiResponse.success(SuccessCode.CREATED, response);
     }
 
     @DeleteMapping("/trips/{tripId}")
