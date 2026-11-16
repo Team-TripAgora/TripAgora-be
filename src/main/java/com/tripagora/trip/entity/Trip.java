@@ -162,6 +162,16 @@ public class Trip extends BaseEntity {
         this.status = this.startDate.isAfter(today) ? TripStatus.RECRUITMENT_CLOSED : TripStatus.IN_PROGRESS;
     }
 
+    // 시작일이 된 모집 중 여행을 가이드 대신 마감해 출발시킨다 (스케줄러).
+    // 서버가 멈춰 종료일까지 지났어도 진행 중으로 바꾸고, 같은 밤 완료 작업이 완료로 넘긴다
+    public void closeRecruitmentOnStartDate(LocalDate today) {
+        if (this.status != TripStatus.RECRUITING || this.startDate.isAfter(today)) {
+            throw new IllegalStateException("시작일이 된 모집 중 여행만 자동 마감할 수 있습니다. 현재 상태: " + this.status + ", 시작일: " + this.startDate);
+        }
+
+        this.status = TripStatus.IN_PROGRESS;
+    }
+
     // 시작일이 된 모집 마감 여행을 진행 중으로 바꾼다 (스케줄러)
     public void start() {
         if (this.status != TripStatus.RECRUITMENT_CLOSED) {
