@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service
@@ -36,7 +37,7 @@ public class ParticipationService {
         User user = userRepository.findByIdForUpdate(userId).orElseThrow(UserNotFoundException::new);
         Trip trip = tripRepository.findByIdForUpdate(tripId).orElseThrow(TripNotFoundException::new);
 
-        trip.validateJoinable();
+        trip.validateJoinable(LocalDate.now(clock));
 
         if (trip.getTemplate().getGuideProfile().getUser().getId().equals(userId)) {
             throw new CannotParticipateInOwnTripException();

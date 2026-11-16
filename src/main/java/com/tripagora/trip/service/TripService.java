@@ -40,6 +40,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -318,14 +319,33 @@ public class TripService {
         // 마감 직전에 들어온 참가 신청과 엇갈리지 않게 여행 행을 잠근다
         Trip trip = lockTripAndVerifyOwner(userId, tripId);
         trip.closeRecruitment(LocalDate.now(clock));
+        openRoom(trip);
+    }
 
+    // 시작일이 된 모집 중 여행을 자동으로 마감한다 (스케줄러가 여행마다 부른다, 여행 하나가 트랜잭션 하나).
+    // 가이드의 수동 마감과 같은 여행 행 잠금을 쓰고, 목록을 읽은 뒤 가이드가 먼저 마감했거나 지운 여행은 건너뛴다 (채팅방이 두 개 생기지 않게)
+    @Transactional
+    public boolean closeRecruitmentOnStartDate(long tripId, LocalDate today) {
+        Optional<Trip> locked = tripRepository.findByIdForUpdate(tripId);
+        if (locked.isEmpty() || locked.get().getStatus() != TripStatus.RECRUITING) {
+            return false;
+        }
+
+        Trip trip = locked.get();
+        trip.closeRecruitmentOnStartDate(today);
+        openRoom(trip);
+        return true;
+    }
+
+    // 모집을 마감하면 채팅방을 열고 여행이 그 채팅방을 가리킨다
+    private void openRoom(Trip trip) {
         Room room = roomRepository.save(Room.create());
         trip.assignRoom(room);
     }
 
     @Transactional(readOnly = true)
     public TripListResponse searchTrips(TripSearchRequest request, Pageable pageable) {
-        Slice<Trip> tripSlice = tripRepository.search(request, pageable);
+        Slice<Trip> tripSlice = tripRepository.search(request, LocalDate.now(clock), pageable);
 
         return TripListResponse.from(tripSlice);
     }

@@ -14,6 +14,7 @@ import com.tripagora.review.exception.AlreadyReviewedException;
 import com.tripagora.review.exception.ReviewNotAllowedException;
 import com.tripagora.review.exception.ReviewNotFoundException;
 import com.tripagora.review.exception.TripNotCompletedException;
+import com.tripagora.review.repository.RatingSummary;
 import com.tripagora.review.repository.ReviewRepository;
 import com.tripagora.trip.entity.Trip;
 import com.tripagora.trip.exception.TripNotFoundException;
@@ -166,38 +167,16 @@ public class ReviewService {
         );
     }
 
+    // 리뷰·템플릿을 전부 불러와 계산하지 않고 집계 쿼리 한 번으로 (리뷰가 많아져도 불러오는 엔티티 수가 같다)
     private void updateTemplateRating(Template template) {
-        List<Review> reviews = reviewRepository.findByTemplate(template);
-        int reviewCount = reviews.size();
-
-        double avgRating = reviews.stream()
-                .map(Review::getRating)
-                .filter(Objects::nonNull) // null인 평점은 집계에서 제외
-                .mapToInt(Integer::intValue) // null이 걸러진 후에 int로 변환
-                .average()
-                .orElse(0.0);
-
-        template.updateRating(avgRating, reviewCount);
+        RatingSummary rating = reviewRepository.summarizeRatingOf(template);
+        template.updateRating(rating.average(), Math.toIntExact(rating.count()));
     }
 
+    // 템플릿 평점을 먼저 고친 뒤에 부른다 (가이드 평점은 템플릿에 저장된 평점으로 계산)
     private void updateGuideProfileRating(GuideProfile guideProfile) {
-        List<Template> templates = templateRepository.findByGuideProfile(guideProfile);
-
-        int totalReviewCount = templates.stream()
-                .map(Template::getReviewCount)
-                .filter(Objects::nonNull)
-                .mapToInt(Integer::intValue)
-                .sum();
-
-        double avgOfTemplateAvgs = templates.stream()
-                .filter(t -> t.getReviewCount() != null && t.getReviewCount() > 0)
-                .map(Template::getAvgRating)
-                .filter(Objects::nonNull)
-                .mapToDouble(Double::doubleValue)
-                .average()
-                .orElse(0.0);
-
-        guideProfile.updateRating(avgOfTemplateAvgs, totalReviewCount);
+        RatingSummary rating = templateRepository.summarizeRatingOf(guideProfile);
+        guideProfile.updateRating(rating.average(), Math.toIntExact(rating.count()));
     }
 
     private void validateReviewer(User user, Trip trip) {

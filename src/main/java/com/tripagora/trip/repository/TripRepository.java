@@ -68,5 +68,9 @@ public interface TripRepository extends JpaRepository<Trip, Long>, TripRepositor
 
     // 시작일이 됐거나 지난 여행 (스케줄러가 못 돈 날이 있어도 다음 실행에서 따라잡는다)
     List<Trip> findByStatusAndStartDateLessThanEqual(TripStatus status, LocalDate today);
+
+    // 시작일이 된 모집 중 여행 id (스케줄러가 하나씩 잠그고 다시 확인한 뒤 마감한다)
+    @Query("SELECT t.id FROM Trip t WHERE t.status = :status AND t.startDate <= :today")
+    List<Long> findIdsByStatusAndStartDateLessThanEqual(@Param("status") TripStatus status, @Param("today") LocalDate today);
     List<Trip> findByStatusAndEndDateBefore(TripStatus status, LocalDate yesterday);
 }

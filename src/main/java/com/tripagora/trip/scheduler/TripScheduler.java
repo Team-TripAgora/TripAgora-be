@@ -3,6 +3,7 @@ package com.tripagora.trip.scheduler;
 import com.tripagora.trip.entity.Trip;
 import com.tripagora.trip.entity.TripStatus;
 import com.tripagora.trip.repository.TripRepository;
+import com.tripagora.trip.service.TripService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -18,7 +19,23 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TripScheduler {
     private final TripRepository tripRepository;
+    private final TripService tripService;
     private final Clock clock;
+
+    // 시작일이 된 모집 중 여행은 가이드가 마감하지 않았어도 마감해 출발시킨다 (모집은 시작 전날까지).
+    // 여행마다 잠그고 다시 확인하므로 트랜잭션은 여행 단위다 (이 메서드에는 걸지 않는다)
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
+    public void closeStartedRecruitments() {
+        LocalDate today = LocalDate.now(clock);
+        log.info("[TripScheduler] 시작일이 된 모집 중 여행 자동 마감 시작 (시작일이 {} 이하)", today);
+
+        List<Long> tripIds = tripRepository.findIdsByStatusAndStartDateLessThanEqual(TripStatus.RECRUITING, today);
+        long closed = tripIds.stream()
+                .filter(tripId -> tripService.closeRecruitmentOnStartDate(tripId, today))
+                .count();
+
+        log.info("[TripScheduler] 시작일이 된 모집 중 여행 자동 마감 완료 (총 {}건)", closed);
+    }
 
     @Transactional
     @Scheduled(cron = "0 1 0 * * *", zone = "Asia/Seoul")
