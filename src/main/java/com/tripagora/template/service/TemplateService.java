@@ -13,7 +13,6 @@ import com.tripagora.trip.repository.TripImageRepository;
 import com.tripagora.trip.repository.TripRepository;
 import com.tripagora.tag.entity.Tag;
 import com.tripagora.tag.exception.InvalidTagSelectionException;
-import com.tripagora.tag.exception.MaximumTagsExceededException;
 import com.tripagora.tag.repository.TagRepository;
 import com.tripagora.itinerary.dto.request.ItineraryUpdateRequest;
 import com.tripagora.itinerary.dto.response.ItinerariesResponse;
@@ -218,11 +217,8 @@ public class TemplateService {
         Template template = findTemplateAndVerifyOwner(userId, templateId);
         verifyNoActiveTrips(templateId);
 
+        // 개수(최대 5개)는 요청 검증(TemplateTagUpdateRequest)이 맡는다
         List<Long> tagIds = request.tagIds();
-
-        if (tagIds.size() > 5) {
-            throw new MaximumTagsExceededException();
-        }
 
         List<Tag> newTags = tagRepository.findAllById(tagIds);
         if (newTags.size() != tagIds.size()) {
