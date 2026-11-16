@@ -47,7 +47,7 @@ class ParticipationTest extends IntegrationTest {
         trip(TripStatus.RECRUITING, today.plusDays(10));
 
         apply()
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.currentParticipants").value(1));
 
         assertThat(travelerParticipations()).isEqualTo(1);

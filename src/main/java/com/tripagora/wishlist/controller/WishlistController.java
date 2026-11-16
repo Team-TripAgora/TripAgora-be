@@ -27,7 +27,7 @@ public class WishlistController {
     public ApiResponse<Void> addTripToWishlist(@AuthenticationPrincipal final long userId,
                                                   @PathVariable final long tripId) {
         wishlistService.addTripToWishlist(userId, tripId);
-        return ApiResponse.success(SuccessCode.OK);
+        return ApiResponse.success(SuccessCode.CREATED);
     }
 
     @DeleteMapping("/{tripId}")

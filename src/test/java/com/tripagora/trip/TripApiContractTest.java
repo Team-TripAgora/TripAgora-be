@@ -60,7 +60,7 @@ class TripApiContractTest extends IntegrationTest {
                         .header("Authorization", bearer(GUIDE, Role.GUIDE))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"templateId\":1,\"maxParticipants\":4,\"startDate\":\"" + today.plusDays(90) + "\"}"))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.tripId").isNumber());
     }
 
@@ -68,7 +68,7 @@ class TripApiContractTest extends IntegrationTest {
     @DisplayName("참가 신청은 /api/participation/trips/{tripId} 이고 tripId 로 준다")
     void participationUsesTripPath() throws Exception {
         mockMvc.perform(post("/api/participation/trips/3").header("Authorization", bearer(TRAVELER, Role.TRAVELER)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.tripId").value(3));
     }
 

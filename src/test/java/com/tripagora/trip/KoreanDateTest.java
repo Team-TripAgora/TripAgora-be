@@ -85,7 +85,7 @@ class KoreanDateTest extends IntegrationTest {
     @Test
     @DisplayName("여행 시작일 검증도 한국 날짜 기준이다: 한국 날짜로 오늘은 통과, 어제는 400")
     void startDateValidationUsesKoreanDate() throws Exception {
-        createTrip(KOREAN_TODAY).andExpect(status().isOk());
+        createTrip(KOREAN_TODAY).andExpect(status().isCreated());
 
         createTrip(KOREAN_TODAY.minusDays(1))
                 .andExpect(status().isBadRequest())

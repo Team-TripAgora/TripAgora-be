@@ -31,12 +31,12 @@ public class AuthController {
     @PostMapping("/logout")
     public ApiResponse<Void> logout(@AuthenticationPrincipal final long userId) {
         loginService.logout(userId);
-        return ApiResponse.success(SuccessCode.NO_CONTENT);
+        return ApiResponse.success(SuccessCode.OK);
     }
 
     @PostMapping("/reissue")
     public ApiResponse<ReissueResponse> reissue(@RequestBody @Valid final ReissueRequest request) {
         ReissueResponse response = jwtService.reissue(request);
-        return ApiResponse.success(SuccessCode.CREATED, response);
+        return ApiResponse.success(SuccessCode.OK, response);
     }
 }

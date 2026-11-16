@@ -35,7 +35,7 @@ class NoticeValidationTest extends IntegrationTest {
     @DisplayName("공지를 작성한다")
     void createsNotice() throws Exception {
         createNotice("{\"title\":\"집합 안내\",\"content\":\"10시까지 모여주세요\"}")
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.noticeId").isNumber());
     }
 
@@ -50,7 +50,7 @@ class NoticeValidationTest extends IntegrationTest {
     @Test
     @DisplayName("공지 제목을 255자를 넘게 수정하면 400")
     void rejectsUpdatedTitleOver255Characters() throws Exception {
-        createNotice("{\"title\":\"집합 안내\",\"content\":\"10시까지 모여주세요\"}").andExpect(status().isOk());
+        createNotice("{\"title\":\"집합 안내\",\"content\":\"10시까지 모여주세요\"}").andExpect(status().isCreated());
 
         mockMvc.perform(patch("/api/rooms/" + ROOM + "/notices/1")
                         .header("Authorization", bearer(GUIDE, Role.GUIDE))

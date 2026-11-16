@@ -55,7 +55,7 @@ class RecruitmentPeriodTest extends IntegrationTest {
     @Test
     @DisplayName("시작일이 내일인 모집 중 여행은 신청할 수 있다")
     void canJoinTripStartingTomorrow() throws Exception {
-        join(STARTS_TOMORROW).andExpect(status().isOk());
+        join(STARTS_TOMORROW).andExpect(status().isCreated());
     }
 
     private ResultActions join(long tripId) throws Exception {
