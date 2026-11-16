@@ -99,7 +99,7 @@ class RoleBoundaryTest extends IntegrationTest {
         String newGuideToken = accessTokenOf(mockMvc.perform(post("/api/users/me/switch-to-guide").header("Authorization", travelerToken))
                 .andExpect(status().isOk()));
 
-        createTrip(newGuideToken).andExpect(status().isOk());
+        createTrip(newGuideToken).andExpect(status().isCreated());
     }
 
     // 여행객으로 바꾸고 새로 받은 액세스 토큰을 돌려준다

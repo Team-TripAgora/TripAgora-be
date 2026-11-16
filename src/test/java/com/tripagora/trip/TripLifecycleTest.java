@@ -39,7 +39,7 @@ class TripLifecycleTest extends IntegrationTest {
     @DisplayName("찜을 추가하면 찜 목록에 보이고, 지우면 사라진다")
     void addsAndRemovesWishlist() throws Exception {
         mockMvc.perform(post("/api/wishlist/" + RECRUITING_TRIP).header("Authorization", bearer(TRAVELER, Role.TRAVELER)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
         mockMvc.perform(get("/api/wishlist").header("Authorization", bearer(TRAVELER, Role.TRAVELER)))
                 .andExpect(jsonPath("$.data.trips[*].tripId", contains((int) RECRUITING_TRIP)));
 

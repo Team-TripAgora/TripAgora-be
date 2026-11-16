@@ -61,7 +61,7 @@ class TripScheduleConflictTest extends IntegrationTest {
     @DisplayName("겹치는 여행이 없으면 개설된다")
     void createsTripWithoutOverlap() throws Exception {
         createTrip(today.plusDays(90))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.tripId").isNumber());
     }
 

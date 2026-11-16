@@ -49,7 +49,7 @@ class ParticipationConcurrencyTest extends IntegrationTest {
 
         ConcurrentRequests.Result result = ConcurrentRequests.send(mockMvc, applicants, i -> apply(TRAVELER + i, TRIP));
 
-        assertThat(result.count(200)).isEqualTo(CAPACITY);
+        assertThat(result.count(201)).isEqualTo(CAPACITY);
         assertThat(result.count(409)).isEqualTo(applicants - CAPACITY);
         assertThat(travelerParticipations("trip_id = " + TRIP)).isEqualTo(CAPACITY);
         assertThat(currentParticipants(TRIP)).isEqualTo(CAPACITY);
@@ -63,7 +63,7 @@ class ParticipationConcurrencyTest extends IntegrationTest {
 
         ConcurrentRequests.Result result = ConcurrentRequests.send(mockMvc, 5, i -> apply(TRAVELER, TRIP));
 
-        assertThat(result.count(200)).isEqualTo(1);
+        assertThat(result.count(201)).isEqualTo(1);
         assertThat(result.count(409)).isEqualTo(4);
         assertThat(travelerParticipations("user_id = " + TRAVELER)).isEqualTo(1);
         assertThat(currentParticipants(TRIP)).isEqualTo(1);
@@ -80,7 +80,7 @@ class ParticipationConcurrencyTest extends IntegrationTest {
 
         ConcurrentRequests.Result result = ConcurrentRequests.send(mockMvc, trips, i -> apply(TRAVELER, i + 1));
 
-        assertThat(result.count(200)).isEqualTo(1);
+        assertThat(result.count(201)).isEqualTo(1);
         assertThat(result.count(400)).isEqualTo(trips - 1);
         assertThat(travelerParticipations("user_id = " + TRAVELER)).isEqualTo(1);
     }

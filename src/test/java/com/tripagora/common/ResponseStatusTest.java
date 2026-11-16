@@ -17,8 +17,9 @@ import java.time.LocalDate;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-// 응답 본문 code: 새 데이터를 만드는 POST(여행·템플릿·리뷰·공지 생성, 참가 신청, 찜 추가)는 201, 나머지 성공은 200
+// 응답의 HTTP 상태와 본문 code는 같다: 새 데이터를 만드는 POST(여행·템플릿·리뷰·공지 생성, 참가 신청, 찜 추가)는 201, 나머지 성공은 200
 class ResponseStatusTest extends IntegrationTest {
     private static final long GUIDE = 1L;
     private static final long TRAVELER = 2L;
@@ -80,6 +81,7 @@ class ResponseStatusTest extends IntegrationTest {
     }
 
     private void expectStatus(ResultActions result, int status) throws Exception {
-        result.andExpect(jsonPath("$.code").value(status));
+        result.andExpect(status().is(status))
+                .andExpect(jsonPath("$.code").value(status));
     }
 }

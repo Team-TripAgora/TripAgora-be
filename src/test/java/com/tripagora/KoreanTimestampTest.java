@@ -51,7 +51,7 @@ class KoreanTimestampTest extends IntegrationTest {
                         .header("Authorization", bearer(GUIDE, Role.GUIDE))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"title\":\"집합 안내\",\"content\":\"10시까지 모여주세요\"}"))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         assertThat(jdbcTemplate.queryForObject("SELECT created_at FROM notice", LocalDateTime.class)).isEqualTo(KOREAN_NOW);
         assertThat(jdbcTemplate.queryForObject("SELECT modified_at FROM notice", LocalDateTime.class)).isEqualTo(KOREAN_NOW);

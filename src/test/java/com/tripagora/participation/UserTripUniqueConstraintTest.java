@@ -51,7 +51,7 @@ class UserTripUniqueConstraintTest extends IntegrationTest {
         ConcurrentRequests.Result result = ConcurrentRequests.send(mockMvc, 5,
                 i -> post("/api/wishlist/" + TRIP).header("Authorization", bearer(TRAVELER, Role.TRAVELER)));
 
-        assertThat(result.count(200)).isEqualTo(1);
+        assertThat(result.count(201)).isEqualTo(1);
         assertThat(result.count(409)).isEqualTo(4);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM wishlist WHERE user_id = ? AND trip_id = ?",
                 Integer.class, TRAVELER, TRIP)).isEqualTo(1);

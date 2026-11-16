@@ -96,7 +96,7 @@ class TripItineraryCopyTest extends IntegrationTest {
                         .header("Authorization", bearer(GUIDE, Role.GUIDE))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"templateId\":" + TEMPLATE + ",\"maxParticipants\":4,\"startDate\":\"" + today().plusDays(30) + "\"}"))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         return ((Number) JsonPath.read(response, "$.data.tripId")).longValue();
     }

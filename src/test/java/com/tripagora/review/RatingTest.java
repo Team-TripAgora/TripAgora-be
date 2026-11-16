@@ -71,7 +71,7 @@ class RatingTest extends IntegrationTest {
                         .header("Authorization", bearer(6L, Role.TRAVELER))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"tripId\":" + TRIP_A2 + ",\"content\":\"좋았어요\",\"rating\":4}"))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         double templateAverage = (5 + 4 + 4) / 3.0;
         assertTemplate(TEMPLATE_A, templateAverage, 3);

@@ -73,7 +73,7 @@ class ReviewQueryCountTest extends QueryCountTest {
                         .header("Authorization", bearer(AUTHOR, Role.TRAVELER))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"tripId\":" + TRIP + ",\"content\":\"좋았어요\",\"rating\":4}"))
-                .andExpect(status().isOk()));
+                .andExpect(status().isCreated()));
 
         assertCounts(counts, queries, entities);
     }
