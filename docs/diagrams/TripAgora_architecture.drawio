@@ -1,0 +1,153 @@
+<mxfile host="app.diagrams.net" agent="TripAgora" version="24.0.0">
+  <diagram name="System Architecture" id="tripagora-arch">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1300" pageHeight="820" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="Trip Agora — 시스템 아키텍처" style="text;html=1;align=left;verticalAlign=middle;fontSize=22;fontStyle=1;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="40" y="24" width="500" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- ===== Client ===== -->
+        <mxCell id="app" value="Mobile App&#10;React Native · Expo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EAF2FE;strokeColor=#3182F6;fontColor=#1B3A66;fontSize=13;fontStyle=1;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="60" y="330" width="180" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="sdkbox" value="클라이언트 직접 연동 SDK" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F7F9FC;strokeColor=#B0B8C1;fontColor=#4E5968;fontSize=11;fontStyle=1;verticalAlign=top;align=center;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="470" width="220" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="sdk1" value="Naver Map&#10;(지도)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#03C75A;fontColor=#191F28;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="56" y="500" width="88" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="sdk2" value="Kakao&#10;(로그인)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#FFCB00;fontColor=#191F28;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="156" y="500" width="88" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="sdk3" value="Naver&#10;(로그인)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#03C75A;fontColor=#191F28;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="106" y="554" width="88" height="44" as="geometry" />
+        </mxCell>
+
+        <!-- ===== CI/CD ===== -->
+        <mxCell id="github" value="GitHub&#10;저장소" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F2F2F2;strokeColor=#181717;fontColor=#181717;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="450" y="40" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="actions" value="GitHub Actions&#10;PR 테스트 · 배포 빌드" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EAF0FF;strokeColor=#2088FF;fontColor=#0B2E66;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="600" y="40" width="150" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- ===== AWS Cloud group ===== -->
+        <mxCell id="aws" value="AWS Cloud" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];outlineConnect=0;gradientColor=none;html=1;whiteSpace=wrap;fontSize=13;fontStyle=1;container=0;pointerEvents=0;collapsible=0;fillColor=none;strokeColor=#232F3E;dashed=1;verticalAlign=top;align=left;spacingLeft=36;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="360" y="150" width="800" height="470" as="geometry" />
+        </mxCell>
+        <mxCell id="awsicon" value="" style="sketch=0;outlineConnect=0;fillColor=#232F3E;strokeColor=none;html=1;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.aws_cloud_alt;" vertex="1" parent="1">
+          <mxGeometry x="372" y="160" width="24" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- Route 53 -->
+        <mxCell id="r53" value="Route 53&#10;DNS" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#8C4FFF;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.route_53;" vertex="1" parent="1">
+          <mxGeometry x="410" y="230" width="70" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- ALB -->
+        <mxCell id="alb" value="ALB&#10;ACM · HTTPS 종단" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#8C4FFF;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.application_load_balancer;" vertex="1" parent="1">
+          <mxGeometry x="600" y="230" width="70" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- EC2 group -->
+        <mxCell id="ec2grp" value="EC2 (단일 인스턴스)" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];outlineConnect=0;gradientColor=none;html=1;whiteSpace=wrap;fontSize=12;fontStyle=1;container=0;pointerEvents=0;collapsible=0;fillColor=#FFF7F0;strokeColor=#D86613;dashed=0;verticalAlign=top;align=left;spacingLeft=36;fontColor=#D86613;" vertex="1" parent="1">
+          <mxGeometry x="400" y="360" width="330" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="ec2icon" value="" style="sketch=0;outlineConnect=0;fontColor=#232F3E;fillColor=#ED7100;strokeColor=none;html=1;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.ec2;" vertex="1" parent="1">
+          <mxGeometry x="410" y="368" width="22" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="spring" value="Spring Boot&#10;Java 17 · 도메인 15개&#10;REST · STOMP(WebSocket) · 스케줄러" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EAF7E6;strokeColor=#6DB33F;fontColor=#274D1B;fontSize=12;fontStyle=1;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="430" y="410" width="270" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- RDS -->
+        <mxCell id="rds" value="RDS · MySQL 8&#10;Public 접근 차단 (Private)" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#C925D1;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.rds;" vertex="1" parent="1">
+          <mxGeometry x="860" y="360" width="70" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Bastion host -->
+        <mxCell id="bastion" value="Bastion Host&#10;(EC2 · SSH 관문)" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#ED7100;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.ec2;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="235" width="66" height="66" as="geometry" />
+        </mxCell>
+
+        <!-- Admin / developer (external) -->
+        <mxCell id="admin" value="개발자 / 관리자&#10;(로컬 DB 툴)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F7F9FC;strokeColor=#6B7684;fontColor=#4E5968;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="240" width="110" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- S3 -->
+        <mxCell id="s3" value="S3&#10;이미지 저장" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#7AA116;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.s3;" vertex="1" parent="1">
+          <mxGeometry x="860" y="480" width="70" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- ===== External services ===== -->
+        <mxCell id="fcm" value="Firebase FCM&#10;SOS 푸시 발송" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#DD2C00;fontColor=#5A1400;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="430" y="670" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="oauth" value="Kakao / Naver OAuth&#10;소셜 사용자 정보 검증" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFBEA;strokeColor=#E8A400;fontColor=#5A4300;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="620" y="670" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- ===== Edges ===== -->
+        <!-- CI/CD -->
+        <mxCell id="e_gh_act" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#8B95A1;fontColor=#4E5968;fontSize=11;endArrow=block;" edge="1" parent="1" source="github" target="actions">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_act_ec2" value="jar 배포&#10;SCP · SSH 재기동" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#8B95A1;fontColor=#4E5968;fontSize=11;endArrow=block;" edge="1" parent="1" source="actions" target="ec2grp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Client → AWS -->
+        <mxCell id="e_app_r53" value="HTTPS · WSS&#10;REST + STOMP&#10;api.trip-agora.com" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#3182F6;fontColor=#1B3A66;fontSize=11;endArrow=block;" edge="1" parent="1" source="app" target="r53">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_r53_alb" value="라우팅" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#8C4FFF;fontColor=#4E5968;fontSize=11;endArrow=block;" edge="1" parent="1" source="r53" target="alb">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_alb_spring" value="8080 전달" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#8C4FFF;fontColor=#4E5968;fontSize=11;endArrow=block;" edge="1" parent="1" source="alb" target="spring">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- App → SDK -->
+        <mxCell id="e_app_sdk" value="SDK 직접 호출" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#B0B8C1;fontColor=#8B95A1;fontSize=11;endArrow=block;dashed=1;" edge="1" parent="1" source="app" target="sdkbox">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Spring → data -->
+        <mxCell id="e_spring_rds" value="DB R/W&#10;(VPC 내부)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#C925D1;fontColor=#4E5968;fontSize=11;endArrow=block;startArrow=block;" edge="1" parent="1" source="spring" target="rds">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Bastion SSH path -->
+        <mxCell id="e_admin_bastion" value="SSH" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6B7684;fontColor=#4E5968;fontSize=11;endArrow=block;dashed=1;" edge="1" parent="1" source="admin" target="bastion">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_bastion_rds" value="SSH 터널&#10;DB 관리 접근" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6B7684;fontColor=#4E5968;fontSize=11;endArrow=block;dashed=1;" edge="1" parent="1" source="bastion" target="rds">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_spring_s3" value="이미지 업로드" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#7AA116;fontColor=#4E5968;fontSize=11;endArrow=block;" edge="1" parent="1" source="spring" target="s3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Spring → external -->
+        <mxCell id="e_spring_fcm" value="푸시 발송" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#DD2C00;fontColor=#4E5968;fontSize=11;endArrow=block;" edge="1" parent="1" source="spring" target="fcm">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_spring_oauth" value="토큰 검증" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#E8A400;fontColor=#4E5968;fontSize=11;endArrow=block;" edge="1" parent="1" source="spring" target="oauth">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Note -->
+        <mxCell id="note" value="설정 파일 · Firebase 키는 GitHub Secrets에서 빌드 시점 주입 (저장소에 민감정보 없음)" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontColor=#6B7684;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="40" y="640" width="360" height="30" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
