@@ -325,7 +325,7 @@ public class TripService {
 
     @Transactional(readOnly = true)
     public TripListResponse searchTrips(TripSearchRequest request, Pageable pageable) {
-        Slice<Trip> tripSlice = tripRepository.search(request, pageable);
+        Slice<Trip> tripSlice = tripRepository.search(request, LocalDate.now(clock), pageable);
 
         return TripListResponse.from(tripSlice);
     }

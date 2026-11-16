@@ -15,6 +15,7 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static com.tripagora.guideprofile.entity.QGuideProfile.guideProfile;
@@ -32,7 +33,7 @@ public class TripRepositoryImpl implements TripRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Slice<Trip> search(TripSearchRequest request, Pageable pageable) {
+    public Slice<Trip> search(TripSearchRequest request, LocalDate today, Pageable pageable) {
         QRegion parentRegion = new QRegion("parentRegion");
 
         // 검색 조건(검색어·지역)이 템플릿·가이드·지역을 쓴다. 모집 중 여행은 템플릿을 고칠 수 없어 여행 사본과 내용이 같다
@@ -45,7 +46,7 @@ public class TripRepositoryImpl implements TripRepositoryCustom {
                 .leftJoin(templateRegion.region, region)
                 .leftJoin(region.parent, parentRegion); // 상위 지역으로 검색해도 하위 지역 여행이 나오게
 
-        query.where(buildDynamicWhere(request, parentRegion));
+        query.where(buildDynamicWhere(request, today, parentRegion));
 
         // 시작일이 빠른 순. 시작일이 같으면 id 순으로 고정한다 (정렬 값이 같은 줄의 순서는 DB가 정하지 않아, 페이지 경계에서 빠지거나 겹칠 수 있다)
         query.orderBy(trip.startDate.asc(), trip.id.asc());
@@ -68,11 +69,12 @@ public class TripRepositoryImpl implements TripRepositoryCustom {
         return new SliceImpl<>(trips, pageable, hasNext);
     }
 
-    private BooleanBuilder buildDynamicWhere(TripSearchRequest request, QRegion parentRegion) {
+    private BooleanBuilder buildDynamicWhere(TripSearchRequest request, LocalDate today, QRegion parentRegion) {
         BooleanBuilder builder = new BooleanBuilder();
 
-        // 모집 중인 여행만 검색
+        // 모집 중이고 아직 시작하지 않은 여행만 (모집은 시작 전날까지)
         builder.and(trip.status.eq(TripStatus.RECRUITING));
+        builder.and(trip.startDate.gt(today));
 
         // 검색어: 제목·소개·가이드 닉네임
         if (StringUtils.hasText(request.keyword())) {

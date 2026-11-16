@@ -5,6 +5,9 @@ import com.tripagora.trip.entity.Trip;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 
+import java.time.LocalDate;
+
 public interface TripRepositoryCustom {
-    Slice<Trip> search(TripSearchRequest request, Pageable pageable);
+    // 모집 중이고 시작일이 오늘보다 뒤인 여행을 조건으로 검색한다
+    Slice<Trip> search(TripSearchRequest request, LocalDate today, Pageable pageable);
 }

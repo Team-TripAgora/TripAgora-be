@@ -179,8 +179,9 @@ public class Trip extends BaseEntity {
     }
 
     // 참가 신청은 모집 중에만
-    public void validateJoinable() {
-        if (this.status != TripStatus.RECRUITING) {
+    // 모집은 시작 전날까지. 시작일이 된 모집 중 여행은 스케줄러가 마감한다
+    public void validateJoinable(LocalDate today) {
+        if (this.status != TripStatus.RECRUITING || !this.startDate.isAfter(today)) {
             throw new TripNotRecruitingException();
         }
     }
