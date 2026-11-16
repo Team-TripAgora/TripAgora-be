@@ -39,7 +39,8 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         registry.setApplicationDestinationPrefixes("/publish");
-        registry.enableSimpleBroker("/topic")
+        // /topic: 채팅방 구독, /queue: 사용자별 오류 큐(/user/queue/errors)
+        registry.enableSimpleBroker("/topic", "/queue")
                 .setHeartbeatValue(new long[]{HEARTBEAT_INTERVAL_MS, HEARTBEAT_INTERVAL_MS})
                 .setTaskScheduler(messageBrokerTaskScheduler);
     }

@@ -6,11 +6,8 @@ import com.tripagora.chat.dto.response.ChatMessageResponse;
 import com.tripagora.chat.entity.ChatMessage;
 import com.tripagora.chat.repository.ChatMessageRepository;
 import com.tripagora.participation.entity.Participation;
-import com.tripagora.participation.exception.ParticipationNotFoundException;
-import com.tripagora.participation.repository.ParticipationRepository;
 import com.tripagora.room.entity.Room;
-import com.tripagora.room.exception.RoomNotFoundException;
-import com.tripagora.room.repository.RoomRepository;
+import com.tripagora.room.service.RoomAccessValidator;
 import com.tripagora.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -23,13 +20,12 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ChatService {
-    private final RoomRepository roomRepository;
-    private final ParticipationRepository participationRepository;
+    private final RoomAccessValidator roomAccessValidator;
     private final ChatMessageRepository chatMessageRepository;
 
     @Transactional
     public ChatMessageResponse processAndSaveMessage(Long userId, Long roomId, ChatMessageRequest request) {
-        Participation participation = checkAndGetParticipation(userId, roomId);
+        Participation participation = roomAccessValidator.validateParticipant(userId, roomId);
 
         User sender = participation.getUser();
         Room room = participation.getTrip().getRoom();
@@ -57,7 +53,7 @@ public class ChatService {
 
     @Transactional(readOnly = true)
     public ChatHistoryResponse getChatHistory(Long userId, Long roomId, Pageable pageable) {
-        checkAndGetParticipation(userId, roomId);
+        roomAccessValidator.validateParticipant(userId, roomId);
 
         Slice<ChatMessage> messages = chatMessageRepository.findByRoom_Id(roomId, pageable);
 
@@ -75,13 +71,5 @@ public class ChatService {
                 .toList();
 
         return new ChatHistoryResponse(chatMessages, messages.hasNext());
-    }
-
-    private Participation checkAndGetParticipation(Long userId, Long roomId) {
-        Room room = roomRepository.findById(roomId).orElseThrow(RoomNotFoundException::new);
-        Long tripId = room.getTrip().getId();
-
-        return participationRepository.findByUser_IdAndTrip_Id(userId, tripId)
-                .orElseThrow(ParticipationNotFoundException::new);
     }
 }

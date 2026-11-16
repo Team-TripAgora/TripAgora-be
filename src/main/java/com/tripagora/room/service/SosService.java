@@ -2,45 +2,34 @@ package com.tripagora.room.service;
 
 import com.tripagora.common.service.FcmService;
 import com.tripagora.participation.entity.Participation;
-import com.tripagora.room.entity.Room;
-import com.tripagora.room.exception.RoomNotFoundException;
-import com.tripagora.room.repository.RoomRepository;
-import com.tripagora.user.entity.User;
-import com.tripagora.user.exception.UserNotFoundException;
-import com.tripagora.user.repository.UserRepository;
+import com.tripagora.participation.repository.ParticipationRepository;
+import com.tripagora.trip.entity.Trip;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
 public class SosService {
-    private final UserRepository userRepository;
-    private final RoomRepository roomRepository;
+    private final RoomAccessValidator roomAccessValidator;
+    private final ParticipationRepository participationRepository;
     private final FcmService fcmService;
 
-    @Transactional(readOnly = true)
+    // 진행 중인 여행의 참가자만 보낼 수 있고, 같은 여행의 다른 참가자에게 간다.
+    // DB 조회는 각자 짧게 끝내고 FCM 발송은 트랜잭션 밖에서 한다 (외부 호출 동안 DB 커넥션을 잡지 않는다)
     public void sendSos(Long userId, Long roomId) {
-        User sender = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
-        Room room = roomRepository.findById(roomId).orElseThrow(RoomNotFoundException::new);
+        Participation participation = roomAccessValidator.validateParticipant(userId, roomId);
+        Trip trip = participation.getTrip();
+        trip.validateSosSendable();
 
-        List<String> targetTokens = room.getTrip().getParticipants().stream()
-                .map(Participation::getUser)
-                .filter(user -> !Objects.equals(user.getId(), userId)) // 보낸 사람(나) 제외
-                .map(User::getFcmToken)
-                .filter(StringUtils::hasText) // 토큰이 null이거나 빈 문자열인 경우 제외
-                .toList();
+        List<String> targetTokens = participationRepository.findFcmTokensOfOtherParticipants(trip.getId(), userId);
 
         if (!targetTokens.isEmpty()) {
             String title = "🚨 긴급 SOS 요청";
-            String body = String.format("'%s'님이 긴급 도움을 요청했습니다!", sender.getNickname());
-            Long tripId = room.getTrip().getId();
+            String body = String.format("'%s'님이 긴급 도움을 요청했습니다!", participation.getUser().getNickname());
 
-            fcmService.sendMulticastMessage(targetTokens, title, body, tripId);
+            fcmService.sendMulticastMessage(targetTokens, title, body, trip.getId());
         }
     }
 }

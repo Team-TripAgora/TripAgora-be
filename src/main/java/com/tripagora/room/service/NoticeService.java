@@ -21,12 +21,12 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class NoticeService {
-    private final RoomService roomService;
+    private final RoomAccessValidator roomAccessValidator;
     private final NoticeRepository noticeRepository;
 
     @Transactional
     public NoticeResponse createNotice(long userId, long roomId, NoticeCreateRequest request) {
-        Room room = roomService.checkRoomAndGuide(userId, roomId);
+        Room room = roomAccessValidator.validateGuide(userId, roomId).getTrip().getRoom();
 
         Notice notice = Notice.builder()
                 .room(room)
@@ -45,7 +45,7 @@ public class NoticeService {
 
     @Transactional(readOnly = true)
     public NoticeResponse getNotice(long userId, long roomId, long noticeId) {
-        roomService.checkRoomAndParticipant(userId, roomId);
+        roomAccessValidator.validateParticipant(userId, roomId);
         Notice notice = checkNoticeAndRoom(noticeId, roomId);
 
         return new NoticeResponse(
@@ -58,7 +58,7 @@ public class NoticeService {
 
     @Transactional(readOnly = true)
     public NoticeListResponse getNotices(long userId, long roomId, Pageable pageable) {
-        Room room = roomService.checkRoomAndParticipant(userId, roomId);
+        Room room = roomAccessValidator.validateParticipant(userId, roomId).getTrip().getRoom();
 
         Slice<Notice> noticeSlice = noticeRepository.findByRoomOrderByIdDesc(room, pageable);
 
@@ -75,7 +75,7 @@ public class NoticeService {
 
     @Transactional
     public NoticeResponse updateNotice(long userId, long roomId, long noticeId, NoticeUpdateRequest request) {
-        roomService.checkRoomAndGuide(userId, roomId);
+        roomAccessValidator.validateGuide(userId, roomId);
         Notice notice = checkNoticeAndRoom(noticeId, roomId);
 
         notice.update(request.title(), request.content());
@@ -90,7 +90,7 @@ public class NoticeService {
 
     @Transactional
     public void deleteNotice(long userId, long roomId, long noticeId) {
-        roomService.checkRoomAndGuide(userId, roomId);
+        roomAccessValidator.validateGuide(userId, roomId);
         Notice notice = checkNoticeAndRoom(noticeId, roomId);
 
         noticeRepository.delete(notice);

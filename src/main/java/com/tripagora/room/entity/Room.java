@@ -1,10 +1,8 @@
 package com.tripagora.room.entity;
 
 import com.tripagora.common.entity.BaseEntity;
-import com.tripagora.trip.entity.Trip;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -19,16 +17,12 @@ public class Room extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 외래 키는 여행 쪽(trip.room_id)에 있다
-    @OneToOne(mappedBy = "room")
-    private Trip trip;
-
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("id desc")
     private List<Notice> notices = new ArrayList<>();
 
-    @Builder
-    public Room(Trip trip) {
-        this.trip = trip;
+    // 모집을 마감할 때 만든다. 어느 여행의 방인지는 여행이 외래 키(trip.room_id)로 가리킨다
+    public static Room create() {
+        return new Room();
     }
 }

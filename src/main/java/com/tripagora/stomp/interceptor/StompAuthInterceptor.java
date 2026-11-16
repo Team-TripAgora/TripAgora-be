@@ -5,12 +5,9 @@ import com.tripagora.auth.exception.UnAuthorizedAccessException;
 import com.tripagora.auth.util.JWTUtil;
 import com.tripagora.auth.util.TokenClaims;
 import com.tripagora.auth.util.TokenType;
+import com.tripagora.stomp.RoomDestinations;
 import com.tripagora.stomp.exception.InvalidDestinationException;
-import com.tripagora.participation.exception.ParticipationNotFoundException;
-import com.tripagora.participation.repository.ParticipationRepository;
-import com.tripagora.room.entity.Room;
-import com.tripagora.room.exception.RoomNotFoundException;
-import com.tripagora.room.repository.RoomRepository;
+import com.tripagora.room.service.RoomAccessValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.Message;
@@ -33,8 +30,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StompAuthInterceptor implements ChannelInterceptor {
     private final JWTUtil jwtUtil;
-    private final RoomRepository roomRepository;
-    private final ParticipationRepository participationRepository;
+    private final RoomAccessValidator roomAccessValidator;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -70,20 +66,17 @@ public class StompAuthInterceptor implements ChannelInterceptor {
             }
 
             String destination = accessor.getDestination();
-            if (destination == null || !destination.startsWith("/topic/room/")) {
-                log.warn("STOMP SUBSCRIBE 실패 - 유효하지 않은 destination: {}", destination);
-                throw new InvalidDestinationException();
+            Long userId = (Long) auth.getPrincipal();
+
+            // 내 오류 큐는 나에게 온 것만 받으므로 로그인만 확인한다
+            if (RoomDestinations.USER_ERRORS.equals(destination)) {
+                log.info("STOMP SUBSCRIBE 성공 - userId: {}, 오류 큐", userId);
+                return message;
             }
 
-            String[] parts = destination.split("/");
-
-            Long userId = (Long) auth.getPrincipal();
-            Long roomId = Long.parseLong(parts[3]);
-            Room room = roomRepository.findById(roomId).orElseThrow(RoomNotFoundException::new);
-            Long tripId = room.getTrip().getId();
-
-            participationRepository.findByUser_IdAndTrip_Id(userId, tripId)
-                    .orElseThrow(ParticipationNotFoundException::new);
+            Long roomId = RoomDestinations.roomIdOfSubscription(destination)
+                    .orElseThrow(() -> invalidDestination(StompCommand.SUBSCRIBE, destination));
+            roomAccessValidator.validateParticipant(userId, roomId);
 
             log.info("STOMP SUBSCRIBE 성공 - userId: {}, roomId: {}", userId, roomId);
         }
@@ -96,15 +89,18 @@ public class StompAuthInterceptor implements ChannelInterceptor {
             }
 
             String destination = accessor.getDestination();
-            if (destination == null || !destination.startsWith("/publish/room/")) {
-                log.warn("STOMP SEND 실패 - 유효하지 않은 destination: {}", destination);
-                throw new InvalidDestinationException();
-            }
+            RoomDestinations.roomIdOfPublish(destination)
+                    .orElseThrow(() -> invalidDestination(StompCommand.SEND, destination));
 
             Long userId = (Long) auth.getPrincipal();
             log.info("STOMP SEND 성공 - userId: {}", userId);
         }
 
         return message;
+    }
+
+    private InvalidDestinationException invalidDestination(StompCommand command, String destination) {
+        log.warn("STOMP {} 실패 - 유효하지 않은 destination: {}", command, destination);
+        return new InvalidDestinationException();
     }
 }

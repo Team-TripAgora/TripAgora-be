@@ -217,6 +217,13 @@ public class Trip extends BaseEntity {
         }
     }
 
+    // SOS는 여행 중에 쓰는 기능이라 진행 중에만 (출발 전·완료 후에는 보내지 않음)
+    public void validateSosSendable() {
+        if (this.status != TripStatus.IN_PROGRESS) {
+            throw new TripNotInProgressException();
+        }
+    }
+
     public void increaseParticipant() {
         if (this.currentParticipants >= this.maxParticipants) {
             throw new TripFullException();
