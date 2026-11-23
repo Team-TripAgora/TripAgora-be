@@ -40,14 +40,13 @@ public class LoginService {
     private final RestTemplate restTemplate = new RestTemplate();
 
     private final String KAKAO_USERINFO_URL = "https://kapi.kakao.com/v2/user/me";
-    private final String NAVER_USERINFO_URL = "https://openapi.naver.com/v1/nid/me";
     private static final String NO_PROFILE_IMAGE = "";
 
-    // 외부 호출(카카오·네이버 사용자 정보, 프로필 사진 다운로드·S3 업로드)은 DB 트랜잭션 밖에서 먼저 하고,
+    // 외부 호출(카카오 사용자 정보, 프로필 사진 다운로드·S3 업로드)은 DB 트랜잭션 밖에서 먼저 하고,
     // 사용자·토큰 저장만 짧은 트랜잭션으로 한다. 저장이 실패하면 방금 올린 프로필 사진을 지운다
     public SocialLoginResponse socialLogin(SocialLoginRequest request, SocialType socialType) {
-        String userInfoJson = fetchUserInfo(request.socialAccessToken(), socialType);
-        SocialUserInfo userInfo = parseUserInfo(userInfoJson, socialType);
+        String userInfoJson = fetchKakaoUserInfo(request.socialAccessToken());
+        SocialUserInfo userInfo = parseKakaoUserInfo(userInfoJson);
 
         boolean registered = userRepository.findBySocialIdAndSocialType(userInfo.id(), socialType).isPresent();
         String profileImageUrl = registered ? null : uploadProfileImage(userInfo.profileImageUrl());
@@ -78,19 +77,14 @@ public class LoginService {
         return new SocialLoginResponse(tokens.accessToken(), tokens.refreshToken(), isNewUser);
     }
 
-    private String fetchUserInfo(String socialAccessToken, SocialType socialType) {
-        String url = switch (socialType) {
-            case KAKAO -> KAKAO_USERINFO_URL;
-            case NAVER -> NAVER_USERINFO_URL;
-        };
-
+    private String fetchKakaoUserInfo(String socialAccessToken) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(socialAccessToken);
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
         try {
             ResponseEntity<String> response =
-                    restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+                    restTemplate.exchange(KAKAO_USERINFO_URL, HttpMethod.GET, entity, String.class);
             return response.getBody();
         } catch (HttpClientErrorException.Unauthorized e) {
             throw new SocialAccessTokenInvalidException();
@@ -99,24 +93,13 @@ public class LoginService {
         }
     }
 
-    private SocialUserInfo parseUserInfo(String json, SocialType type) {
+    private SocialUserInfo parseKakaoUserInfo(String json) {
         try {
-            return switch (type) {
-                case KAKAO -> {
-                    KakaoUserInfo kakao = objectMapper.readValue(json, KakaoUserInfo.class);
-                    yield new SocialUserInfo(
-                            kakao.getId().toString(),
-                            kakao.getKakaoAccount().getProfile().getProfileImageUrl()
-                    );
-                }
-                case NAVER -> {
-                    NaverUserInfo naver = objectMapper.readValue(json, NaverUserInfo.class);
-                    yield new SocialUserInfo(
-                            naver.getResponse().getId(),
-                            naver.getResponse().getProfile_image()
-                    );
-                }
-            };
+            KakaoUserInfo kakao = objectMapper.readValue(json, KakaoUserInfo.class);
+            return new SocialUserInfo(
+                    kakao.getId().toString(),
+                    kakao.getKakaoAccount().getProfile().getProfileImageUrl()
+            );
         } catch (JsonProcessingException e) {
             throw new SocialJsonParseErrorException();
         }
