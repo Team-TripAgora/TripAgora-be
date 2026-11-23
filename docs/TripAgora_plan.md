@@ -39,7 +39,7 @@
 ## 2. 사용자 여정 (User Journey)
 
 ```
-[공통]   소셜 로그인(카카오/네이버) → 닉네임·프로필 → 관심사 태그 3개 이상 선택
+[공통]   소셜 로그인(카카오) → 닉네임·프로필 → 관심사 태그 3개 이상 선택
    │
    ├── [가이드 모드]
    │      마이페이지에서 가이드 전환 (프로필 자동 생성 + 토큰 재발급)
@@ -93,7 +93,7 @@
 | 실시간 | Spring WebSocket + STOMP (SockJS 폴백) | 채팅·위치 공유. 내장 SimpleBroker (단일 서버), 하트비트로 끊긴 연결 감지 |
 | 푸시 | Firebase Admin SDK (FCM) | SOS 긴급 호출 |
 | 스토리지 | AWS S3 | 프로필·템플릿 이미지 (UUID 키). 지우는 것은 DB 커밋 뒤 |
-| 인증 | 소셜 로그인(카카오·네이버) + JWT (jjwt) | 자체 비밀번호 미보유. Access/Refresh, Refresh는 DB에 두고 재발급마다 교체 |
+| 인증 | 소셜 로그인(카카오) + JWT (jjwt) | 자체 비밀번호 미보유. Access/Refresh, Refresh는 DB에 두고 재발급마다 교체 |
 | 테스트 | JUnit 5 · Testcontainers(MySQL 8) · MockMvc | 실제 MySQL 위에서 API·동시성·쿼리 수를 검증 |
 | 인프라 | AWS EC2 단일 인스턴스 · GitHub Actions | PR마다 테스트, main 반영 시 배포. `api.trip-agora.com` 도메인 운영 (현재는 종료) |
 

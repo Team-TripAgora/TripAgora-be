@@ -49,7 +49,7 @@
 CREATE TABLE users (
     id           BIGINT       NOT NULL AUTO_INCREMENT,
     social_id    VARCHAR(255) NOT NULL,
-    social_type  ENUM('KAKAO','NAVER') NOT NULL,
+    social_type  ENUM('KAKAO') NOT NULL,
     nickname     VARCHAR(255) NULL,                  -- 최초 로그인 직후엔 미설정, 탈퇴 시 비움
     role         ENUM('ADMIN','GUIDE','TRAVELER') NULL,  -- 현재 활성 역할 (가입 시 TRAVELER)
     image_url    VARCHAR(255) NOT NULL,              -- 소셜 프로필 이미지를 S3로 다시 올린 URL, 탈퇴 시 빈 문자열
@@ -62,7 +62,7 @@ CREATE TABLE users (
 );
 ```
 
-- 이메일·비밀번호 컬럼이 없다. 인증은 소셜 로그인(카카오/네이버)에 맡기고, 서버는 `(social_id, social_type)` 조합으로만 사용자를 식별한다.
+- 이메일·비밀번호 컬럼이 없다. 인증은 소셜 로그인(카카오)에 맡기고, 서버는 `(social_id, social_type)` 조합으로만 사용자를 식별한다.
 - `role`은 현재 활성 역할이다. 역할 전환 API가 이 값을 바꾸고 JWT를 재발급한다. 가이드 토큰으로 온 요청은 이 값을 확인해, 여행자로 바꾼 뒤의 예전 가이드 토큰을 거부한다.
 - **탈퇴는 행을 지우지 않는다.** `social_id`를 `withdrawn-{id}`로 바꿔 다시 로그인되지 않게 하고 닉네임·이미지·FCM 토큰·관심사·찜을 비운다. 다른 사람의 참가·리뷰·채팅 이력이 이 행을 참조하므로 남겨 둔다.
 
@@ -490,7 +490,7 @@ CREATE TABLE review (
 
 | Enum | 값 | 저장 방식 | 사용처 |
 | --- | --- | --- | --- |
-| `SocialType` | `KAKAO`, `NAVER` | STRING | users.social_type |
+| `SocialType` | `KAKAO` | STRING | users.social_type |
 | `Role` | `TRAVELER`, `GUIDE`, `ADMIN`* | STRING (chat_message.sender_role만 ORDINAL) | users.role, participation.role, chat_message.sender_role |
 | `TripStatus` | `RECRUITING`, `RECRUITMENT_CLOSED`, `IN_PROGRESS`, `COMPLETED` | STRING | trip.status |
 | `GuidePortfolio.PortfolioType` | `FACEBOOK`, `INSTAGRAM`, `TWITTER`, `WEBSITE`, `YOUTUBE` | STRING | guide_portfolio.type |

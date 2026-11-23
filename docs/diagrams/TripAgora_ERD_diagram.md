@@ -48,7 +48,7 @@ erDiagram
     USERS {
         Long id PK
         String social_id "UQ(social_id, social_type)"
-        String social_type "KAKAO | NAVER"
+        String social_type "KAKAO"
         String nickname "UQ"
         String role "현재 활성 역할"
         String image_url "소셜 이미지 S3 재업로드"
