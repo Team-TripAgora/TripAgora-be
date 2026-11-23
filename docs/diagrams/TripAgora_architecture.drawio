@@ -16,16 +16,13 @@
         </mxCell>
 
         <mxCell id="sdkbox" value="클라이언트 직접 연동 SDK" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F7F9FC;strokeColor=#B0B8C1;fontColor=#4E5968;fontSize=11;fontStyle=1;verticalAlign=top;align=center;spacingTop=8;" vertex="1" parent="1">
-          <mxGeometry x="40" y="470" width="220" height="140" as="geometry" />
+          <mxGeometry x="40" y="470" width="220" height="94" as="geometry" />
         </mxCell>
         <mxCell id="sdk1" value="Naver Map&#10;(지도)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#03C75A;fontColor=#191F28;fontSize=11;" vertex="1" parent="1">
           <mxGeometry x="56" y="500" width="88" height="44" as="geometry" />
         </mxCell>
         <mxCell id="sdk2" value="Kakao&#10;(로그인)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#FFCB00;fontColor=#191F28;fontSize=11;" vertex="1" parent="1">
           <mxGeometry x="156" y="500" width="88" height="44" as="geometry" />
-        </mxCell>
-        <mxCell id="sdk3" value="Naver&#10;(로그인)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#03C75A;fontColor=#191F28;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="106" y="554" width="88" height="44" as="geometry" />
         </mxCell>
 
         <!-- ===== CI/CD ===== -->
@@ -89,7 +86,7 @@
         <mxCell id="fcm" value="Firebase FCM&#10;SOS 푸시 발송" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#DD2C00;fontColor=#5A1400;fontSize=12;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="430" y="670" width="150" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="oauth" value="Kakao / Naver OAuth&#10;소셜 사용자 정보 검증" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFBEA;strokeColor=#E8A400;fontColor=#5A4300;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+        <mxCell id="oauth" value="Kakao OAuth&#10;소셜 사용자 정보 검증" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFBEA;strokeColor=#E8A400;fontColor=#5A4300;fontSize=12;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="620" y="670" width="180" height="60" as="geometry" />
         </mxCell>
 

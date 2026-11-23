@@ -12,11 +12,11 @@
 
 ## 0. 진입·로그인·온보딩 화면
 
-### FEAT-AUTH-001 · 소셜 로그인 (카카오/네이버)
+### FEAT-AUTH-001 · 소셜 로그인 (카카오)
 
 - **화면**: 로그인
-- **API**: `POST /api/auth/login/{socialType}` (`KAKAO` | `NAVER`, 인증 불필요)
-- **정상 흐름**: 앱이 소셜 SDK로 받은 Access Token을 서버에 전달 → 서버가 카카오/네이버 사용자 정보 API를 직접 호출해 토큰을 검증 → `(socialId, socialType)`으로 회원 조회, 없으면 생성(이때 소셜 프로필 이미지를 S3로 다시 올려 자체 URL로 보관) → JWT Access/Refresh 발급, Refresh는 DB에 저장 → `isNewUser` 플래그로 앱이 온보딩 진입 여부를 결정
+- **API**: `POST /api/auth/login/{socialType}` (`KAKAO`만 받는다. 다른 값은 400, 인증 불필요)
+- **정상 흐름**: 앱이 소셜 SDK로 받은 Access Token을 서버에 전달 → 서버가 카카오 사용자 정보 API를 직접 호출해 토큰을 검증 → `(socialId, socialType)`으로 회원 조회, 없으면 생성(이때 소셜 프로필 이미지를 S3로 다시 올려 자체 URL로 보관) → JWT Access/Refresh 발급, Refresh는 DB에 저장 → `isNewUser` 플래그로 앱이 온보딩 진입 여부를 결정
 - 소셜 API 호출과 이미지 업로드는 DB 트랜잭션 밖에서 하고, 회원 저장이 실패하면 올린 이미지를 지운다
 - **예외**: 소셜 토큰 무효(`SocialAccessTokenInvalidException`), 사용자 정보 파싱 실패(`SocialJsonParseErrorException`)
 - 이메일/비밀번호 저장 없음 — 자체 자격증명을 아예 보유하지 않는 구조
